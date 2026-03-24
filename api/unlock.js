@@ -41,15 +41,16 @@ export default async function handler(req, res) {
       .map(b => ({
         url: b.url,
         title: b.pathname.replace(/^.*[\\\/]/, '').split('.')[0].toUpperCase(),
-        tag: 'DECRYPTED'
+        tag: 'IMAGE'
       }));
 
-    const videoBlob = blobs.find(b => b.pathname.match(/\.(mp4|webm|mov)$/i));
-    const video = videoBlob ? {
-      url: videoBlob.url,
-      title: videoBlob.pathname.replace(/^.*[\\\/]/, '').split('.')[0].toUpperCase(),
-      tag: 'TRANSMISSION'
-    } : null;
+    const videos = blobs
+      .filter(b => b.pathname.match(/\.(mp4|webm|mov)$/i))
+      .map(b => ({
+        url: b.url,
+        title: b.pathname.replace(/^.*[\\\/]/, '').split('.')[0].toUpperCase(),
+        tag: 'VIDEO'
+      }));
 
     return res.status(200).json({
       unlocked: true,
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
       media: {
         message: "/// VAULT CONTENTS RECOVERED ///\nThe timeline has been restored. All artifacts decrypted successfully.",
         images: images,
-        video: video,
+        videos: videos,
       },
     });
   } catch (error) {
