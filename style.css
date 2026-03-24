@@ -69,6 +69,72 @@ body {
   pointer-events: none;
 }
 
+/* ─── Boot Sequence ─── */
+.boot-sequence {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s var(--ease), visibility 0.8s;
+}
+
+.boot-sequence--hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.boot-sequence__content {
+  width: 90%;
+  max-width: 600px;
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  color: var(--cyan);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  text-shadow: 0 0 5px var(--cyan-dim);
+}
+
+.boot-sequence__content::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  margin-left: 5px;
+}
+
+/* ─── Audio Toggle ─── */
+.audio-toggle {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 40;
+  transition: all 0.3s var(--ease);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.audio-toggle:hover {
+  border-color: var(--cyan);
+  transform: scale(1.05);
+  box-shadow: var(--cyan-glow);
+}
+
+.audio-icon {
+  width: 20px;
+  height: 20px;
+}
+
 /* ─── Sections ─── */
 .section {
   position: fixed;
