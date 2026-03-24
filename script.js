@@ -19,8 +19,6 @@ const progressFill = $('#progress-fill');
 const progressText = $('#progress-text');
 const currentTimeEl = $('#current-time');
 const vaultGrid = $('#vault-grid');
-const vaultVideoWrapper = $('#vault-video-wrapper');
-const vaultVideo = $('#vault-video');
 const vaultMessage = $('#vault-message');
 const unlockTimeEl = $('#unlock-time');
 const previewGrid = $('#preview-grid');
@@ -358,32 +356,45 @@ function renderMedia(media) {
     vaultMessage.style.display = 'block';
   }
 
-  // Render images
+  // Render media
   vaultGrid.innerHTML = '';
 
-  if (media.images && media.images.length > 0) {
-    media.images.forEach((img, i) => {
+  // Combine images and videos for sorting/rendering
+  const allMedia = [
+    ...(media.images || []).map(m => ({ ...m, type: 'image' })),
+    ...(media.videos || []).map(m => ({ ...m, type: 'video' }))
+  ];
+
+  if (allMedia.length > 0) {
+    allMedia.forEach((item, i) => {
       const card = document.createElement('div');
-      card.className = 'vault__card fade-up';
+      card.className = `vault__card fade-up ${item.type === 'video' ? 'vault__card--video' : ''}`;
       card.style.animationDelay = `${i * 0.12}s`;
-      card.innerHTML = `
-        <img src="${img.url}" alt="${img.title}" loading="lazy" />
-        <div class="vault__card-info">
-          <span class="vault__card-title">${img.title}</span>
-          <span class="vault__card-tag">${img.tag || 'MEDIA'}</span>
-        </div>
-      `;
+      
+      if (item.type === 'image') {
+        card.innerHTML = `
+          <img src="${item.url}" alt="${item.title}" loading="lazy" />
+          <div class="vault__card-info">
+            <span class="vault__card-title">${item.title}</span>
+            <span class="vault__card-tag">${item.tag || 'IMAGE'}</span>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="vault__card-video-wrapper">
+            <video src="${item.url}" controls playsinline preload="metadata"></video>
+            <div class="video-badge">
+              <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+            </div>
+          </div>
+          <div class="vault__card-info">
+            <span class="vault__card-title">${item.title}</span>
+            <span class="vault__card-tag" style="color: var(--cyan); border-color: rgba(0, 240, 255, 0.3);">${item.tag || 'VIDEO'}</span>
+          </div>
+        `;
+      }
       vaultGrid.appendChild(card);
     });
-  }
-
-  // Render video
-  if (media.video) {
-    vaultVideoWrapper.style.display = 'block';
-    vaultVideo.src = media.video.url;
-    vaultVideo.poster = media.video.poster || '';
-    vaultVideoWrapper.classList.add('fade-up');
-    vaultVideoWrapper.style.animationDelay = `${(media.images?.length || 0) * 0.12 + 0.2}s`;
   }
 }
 // ═══════════════════════════════════════════════════
