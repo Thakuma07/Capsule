@@ -9,6 +9,7 @@ const UNLOCK_DATE = new Date('2026-05-15T23:55:00Z');
 // These URLs are ONLY served when the server clock passes the unlock date.
 // Replace these with your actual media links before deployment.
 const MEDIA_PAYLOAD = {
+  message: "Dear Future Me,\n\nBy the time you are reading this, so much has changed. The goals we set, the files we archived... it all feels like a lifetime ago.\n\nNever forget the drive that led us here. Keep pushing boundaries, and remember to look back affectionately at the artifacts left behind in this vault.\n\n— Past You",
   images: [
     // Add your images here. Example:
     // { url: '/media/image1.jpg', title: 'FRAGMENT_001', tag: 'PHOTO' },
