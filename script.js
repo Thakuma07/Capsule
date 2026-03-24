@@ -1,0 +1,469 @@
+/* ═══════════════════════════════════════════════════
+   DIGITAL TIME CAPSULE — Main Script
+   ═══════════════════════════════════════════════════ */
+
+// ─── Config ───
+let TARGET_DATE = new Date('2026-05-15T23:55:00');
+const CREATION_DATE = new Date('2026-03-24T00:00:00');
+const API_ENDPOINT = '/api/unlock';
+
+// ─── DOM Refs ───
+const $ = (sel) => document.querySelector(sel);
+const countdownSection = $('#countdown-section');
+const vaultSection = $('#vault-section');
+const daysEl = $('#days');
+const hoursEl = $('#hours');
+const minutesEl = $('#minutes');
+const secondsEl = $('#seconds');
+const progressFill = $('#progress-fill');
+const progressText = $('#progress-text');
+const currentTimeEl = $('#current-time');
+const vaultGrid = $('#vault-grid');
+const vaultVideoWrapper = $('#vault-video-wrapper');
+const vaultVideo = $('#vault-video');
+const unlockTimeEl = $('#unlock-time');
+const previewGrid = $('#preview-grid');
+
+// ─── Preview Teaser Config ───
+// These are VISIBLE before unlock — they're just teasers, not the real vault content.
+// Replace with your own preview image/video when ready.
+const PREVIEW_CONFIG = {
+  // The single visible teaser image
+  visibleImage: {
+    url: '',       // e.g., '/media/teaser-preview.jpg'
+    title: 'PREVIEW_001',
+    tag: 'TEASER',
+  },
+  // The single visible teaser video
+  visibleVideo: {
+    url: '',       // e.g., '/media/teaser-clip.mp4'
+    poster: '',    // e.g., '/media/teaser-poster.jpg'
+    title: 'VIDEO_PREVIEW',
+    tag: 'CLIP',
+  },
+  // Number of blurred/locked placeholder cards to show
+  lockedCount: 4,
+};
+
+// ─── Lock Icon SVG ───
+const LOCK_SVG = `<svg class="lock-overlay__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-dim);">
+  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+</svg>`;
+
+// ─── State ───
+let timerInterval = null;
+let isUnlocked = false;
+
+// ═══════════════════════════════════════════════════
+// PARTICLE BACKGROUND
+// ═══════════════════════════════════════════════════
+function initParticles() {
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const PARTICLE_COUNT = 60;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 1.5 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.speedY = (Math.random() - 0.5) * 0.3;
+      this.opacity = Math.random() * 0.5 + 0.1;
+    }
+
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+
+      if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0, 240, 255, ${this.opacity})`;
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push(new Particle());
+  }
+
+  function connectParticles() {
+    for (let a = 0; a < particles.length; a++) {
+      for (let b = a + 1; b < particles.length; b++) {
+        const dx = particles[a].x - particles[b].x;
+        const dy = particles[a].y - particles[b].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(0, 240, 255, ${0.06 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => {
+      p.update();
+      p.draw();
+    });
+    connectParticles();
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+// ═══════════════════════════════════════════════════
+// COUNTDOWN TIMER
+// ═══════════════════════════════════════════════════
+function padZero(n) {
+  return String(n).padStart(2, '0');
+}
+
+function updateClock() {
+  const now = new Date();
+  if (currentTimeEl) {
+    currentTimeEl.textContent = now.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }
+}
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = TARGET_DATE.getTime() - now.getTime();
+
+  if (diff <= 0) {
+    // Timer has reached zero
+    daysEl.textContent = '00';
+    hoursEl.textContent = '00';
+    minutesEl.textContent = '00';
+    secondsEl.textContent = '00';
+    progressFill.style.width = '100%';
+    progressText.textContent = '100% complete — UNLOCKING VAULT...';
+    clearInterval(timerInterval);
+
+    if (!isUnlocked) {
+      isUnlocked = true;
+      unlockVault();
+    }
+    return;
+  }
+
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  daysEl.textContent = padZero(days);
+  hoursEl.textContent = padZero(hours);
+  minutesEl.textContent = padZero(minutes);
+  secondsEl.textContent = padZero(seconds);
+
+  // Progress bar
+  const totalDuration = TARGET_DATE.getTime() - CREATION_DATE.getTime();
+  const elapsed = now.getTime() - CREATION_DATE.getTime();
+  const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+  progressFill.style.width = `${progress.toFixed(2)}%`;
+  progressText.textContent = `${progress.toFixed(2)}% complete`;
+
+  updateClock();
+}
+
+// ═══════════════════════════════════════════════════
+// VAULT UNLOCK
+// ═══════════════════════════════════════════════════
+async function unlockVault() {
+  // Transition sections
+  countdownSection.classList.remove('section--active');
+
+  await sleep(800);
+
+  vaultSection.classList.add('section--active');
+
+  if (unlockTimeEl) {
+    unlockTimeEl.textContent = new Date().toLocaleString('en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'medium',
+    });
+  }
+
+  // Show loader while fetching
+  vaultGrid.innerHTML = `
+    <div class="vault__loader" style="grid-column: 1 / -1;">
+      <div class="spinner"></div>
+      <p>DECRYPTING VAULT CONTENTS...</p>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(API_ENDPOINT);
+    const data = await res.json();
+
+    if (!data.unlocked) {
+      vaultGrid.innerHTML = `
+        <div class="vault__loader" style="grid-column: 1 / -1;">
+          <p style="color: var(--red);">VAULT IS STILL SEALED. SERVER TIME HAS NOT REACHED THE UNLOCK DATE.</p>
+        </div>
+      `;
+      return;
+    }
+
+    renderMedia(data.media);
+  } catch (err) {
+    console.error('Failed to fetch vault contents:', err);
+    vaultGrid.innerHTML = `
+      <div class="vault__loader" style="grid-column: 1 / -1;">
+        <p style="color: var(--red);">ERROR DECRYPTING VAULT. PLEASE REFRESH.</p>
+      </div>
+    `;
+  }
+}
+
+function renderMedia(media) {
+  if (!media) return;
+
+  // Render images
+  vaultGrid.innerHTML = '';
+
+  if (media.images && media.images.length > 0) {
+    media.images.forEach((img, i) => {
+      const card = document.createElement('div');
+      card.className = 'vault__card fade-up';
+      card.style.animationDelay = `${i * 0.12}s`;
+      card.innerHTML = `
+        <img src="${img.url}" alt="${img.title}" loading="lazy" />
+        <div class="vault__card-info">
+          <span class="vault__card-title">${img.title}</span>
+          <span class="vault__card-tag">${img.tag || 'MEDIA'}</span>
+        </div>
+      `;
+      vaultGrid.appendChild(card);
+    });
+  }
+
+  // Render video
+  if (media.video) {
+    vaultVideoWrapper.style.display = 'block';
+    vaultVideo.src = media.video.url;
+    vaultVideo.poster = media.video.poster || '';
+    vaultVideoWrapper.classList.add('fade-up');
+    vaultVideoWrapper.style.animationDelay = `${(media.images?.length || 0) * 0.12 + 0.2}s`;
+  }
+}
+// ═══════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ═══════════════════════════════════════════════════
+// VAULT PREVIEW (Teaser on countdown page)
+// ═══════════════════════════════════════════════════
+function renderPreview() {
+  if (!previewGrid) return;
+  previewGrid.innerHTML = '';
+
+  const { visibleImage, visibleVideo, lockedCount } = PREVIEW_CONFIG;
+
+  // 1. Visible teaser image card
+  const imgCard = document.createElement('div');
+  imgCard.className = 'preview__card fade-up';
+  imgCard.style.animationDelay = '0s';
+
+  if (visibleImage.url) {
+    imgCard.innerHTML = `
+      <img src="${visibleImage.url}" alt="${visibleImage.title}" loading="lazy" />
+      <div class="preview__card-info">
+        <span class="preview__card-title">${visibleImage.title}</span>
+        <span class="preview__card-tag">${visibleImage.tag}</span>
+      </div>
+    `;
+  } else {
+    // Placeholder when no image is set yet
+    imgCard.innerHTML = `
+      <div style="height:200px; background: linear-gradient(135deg, #111 0%, #1a1a2e 50%, #0a0a0a 100%); display:flex; align-items:center; justify-content:center;">
+        <span style="font-family: var(--font-mono); font-size:0.7rem; color: var(--cyan); letter-spacing:0.15em;">TEASER IMAGE</span>
+      </div>
+      <div class="preview__card-info">
+        <span class="preview__card-title">${visibleImage.title}</span>
+        <span class="preview__card-tag">${visibleImage.tag}</span>
+      </div>
+    `;
+  }
+  previewGrid.appendChild(imgCard);
+
+  // 2. Visible teaser video card
+  const vidCard = document.createElement('div');
+  vidCard.className = 'preview__card preview__card--video fade-up';
+  vidCard.style.animationDelay = '0.12s';
+
+  if (visibleVideo.url) {
+    vidCard.innerHTML = `
+      <div class="preview__card-media">
+        <video src="${visibleVideo.url}" muted loop autoplay playsinline poster="${visibleVideo.poster}"></video>
+        <div class="play-badge">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        </div>
+      </div>
+      <div class="preview__card-info">
+        <span class="preview__card-title">${visibleVideo.title}</span>
+        <span class="preview__card-tag">${visibleVideo.tag}</span>
+      </div>
+    `;
+  } else {
+    vidCard.innerHTML = `
+      <div class="preview__card-media" style="height:200px; background: linear-gradient(135deg, #0a0a0a 0%, #111827 50%, #0a0a0a 100%); display:flex; align-items:center; justify-content:center; position:relative;">
+        <div class="play-badge">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+        </div>
+      </div>
+      <div class="preview__card-info">
+        <span class="preview__card-title">${visibleVideo.title}</span>
+        <span class="preview__card-tag">${visibleVideo.tag}</span>
+      </div>
+    `;
+  }
+  previewGrid.appendChild(vidCard);
+
+  // 3. Locked / blurred placeholder cards
+  const lockedLabels = ['CLASSIFIED', 'ENCRYPTED', 'REDACTED', 'SEALED', 'HIDDEN', 'UNKNOWN'];
+  for (let i = 0; i < lockedCount; i++) {
+    const lockedCard = document.createElement('div');
+    lockedCard.className = 'preview__card preview__card--locked fade-up';
+    lockedCard.style.animationDelay = `${(i + 2) * 0.12}s`;
+
+    // Use a generated gradient as blurred background (no real image needed)
+    const hue = 180 + i * 30;
+    lockedCard.innerHTML = `
+      <div class="preview__card-media">
+        <div style="width:100%;height:100%;background:linear-gradient(${135 + i * 20}deg, hsl(${hue},40%,8%) 0%, hsl(${hue + 40},30%,12%) 50%, hsl(${hue},20%,6%) 100%); filter: blur(0px);"></div>
+        <div class="lock-overlay">
+          ${LOCK_SVG}
+          <span class="lock-overlay__text">${lockedLabels[i % lockedLabels.length]}</span>
+        </div>
+      </div>
+      <div class="preview__card-info">
+        <span class="preview__card-title">FRAGMENT_${String(i + 2).padStart(3, '0')}</span>
+        <span class="preview__card-tag" style="color: var(--red); border-color: rgba(255,0,60,0.3);">LOCKED</span>
+      </div>
+    `;
+    previewGrid.appendChild(lockedCard);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+function init() {
+  initParticles();
+
+  // Check if already past unlock date
+  const now = new Date();
+  if (now >= TARGET_DATE) {
+    isUnlocked = true;
+    countdownSection.classList.remove('section--active');
+    vaultSection.classList.add('section--active');
+
+    if (unlockTimeEl) {
+      unlockTimeEl.textContent = TARGET_DATE.toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'medium',
+      });
+    }
+
+    // Show loader & fetch
+    vaultGrid.innerHTML = `
+      <div class="vault__loader" style="grid-column: 1 / -1;">
+        <div class="spinner"></div>
+        <p>DECRYPTING VAULT CONTENTS...</p>
+      </div>
+    `;
+
+    fetch(API_ENDPOINT)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.unlocked) renderMedia(data.media);
+        else {
+          vaultGrid.innerHTML = `
+            <div class="vault__loader" style="grid-column: 1 / -1;">
+              <p style="color: var(--red);">VAULT IS STILL SEALED ON THE SERVER SIDE.</p>
+            </div>
+          `;
+        }
+      })
+      .catch(() => {
+        vaultGrid.innerHTML = `
+          <div class="vault__loader" style="grid-column: 1 / -1;">
+            <p style="color: var(--red);">CONNECTION ERROR. PLEASE REFRESH.</p>
+          </div>
+        `;
+      });
+  } else {
+    // Start countdown
+    updateCountdown();
+    timerInterval = setInterval(updateCountdown, 1000);
+    // Render teaser preview below the timer
+    renderPreview();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ═══════════════════════════════════════════════════
+// HIDDEN FEATURE: MANIPULATE TARGET DATE
+// Press Ctrl+Shift+D (or Cmd+Shift+D) to change the unlock time locally
+// ═══════════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  // Check for Ctrl/Cmd + Shift + D
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+    e.preventDefault();
+    const newDateStr = prompt(
+      '// HIDDEN OVERRIDE //\nEnter new target date (YYYY-MM-DDTHH:MM:SS):\nExample for unlocking right now: ' + 
+      new Date(Date.now() - 1000).toISOString().slice(0, 19)
+    );
+    
+    if (newDateStr) {
+      const parsedDate = new Date(newDateStr);
+      if (!isNaN(parsedDate.getTime())) {
+        TARGET_DATE = parsedDate;
+        console.log('Target date manually overridden to:', TARGET_DATE);
+        
+        // Force an immediate UI update
+        updateCountdown();
+      } else {
+        alert('Invalid date format. Please use YYYY-MM-DDTHH:MM:SS');
+      }
+    }
+  }
+});
