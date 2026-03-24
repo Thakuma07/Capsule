@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Digital Time Capsule — Locked Until May 15, 2026</title>
-  <meta name="description" content="A sealed digital time capsule. The vault opens on May 15, 2026 at 23:55. What's inside remains a mystery until then." />
+  <meta name="description"
+    content="A sealed digital time capsule. The vault opens on May 15, 2026 at 23:55. What's inside remains a mystery until then." />
   <meta name="theme-color" content="#0a0a0a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
 </head>
+
 <body>
   <!-- ─── Scan-line Overlay ─── -->
   <div class="scanlines" aria-hidden="true"></div>
@@ -51,7 +56,8 @@
         </div>
         <span class="glitch" data-text="CAPSULE">CAPSULE</span>
       </h1>
-      <p class="hero__subtitle">Vault unlocks on <span class="cyan">May 15, 2026</span> at <span class="cyan">23:55</span></p>
+      <p class="hero__subtitle">Vault unlocks on <span class="cyan">May 15, 2026</span> at <span
+          class="cyan">23:55</span></p>
 
       <!-- Timer -->
       <div class="timer" id="timer" role="timer" aria-label="Countdown to vault unlock">
@@ -94,6 +100,27 @@
       </div>
       <p class="preview__desc">A glimpse of what awaits. The full vault unlocks when the timer hits zero.</p>
 
+      <!-- Message Teaser -->
+      <div class="message-teaser fade-up" style="animation-delay: 0.1s;">
+        <p class="message-teaser__visible" style="color: var(--red);">/// URGENT TRANSMISSION FROM THE FUTURE ///</p>
+        <div class="message-teaser__blurred">
+          <p style="line-height: 1.8;">
+            <span class="blur-text">If this capsule is opening, then the timeline has already...</span>
+            <span class="sharp-word sharp-word--red">[ARKYADEEP PAL]</span>
+            <span class="blur-text">▓▓▓ ▒▒▒ ...they are aggressively searching for the...</span>
+            <span class="sharp-word sharp-word--cyan">[GAAR MERE DIACHE AMAR]</span>
+            <span class="blur-text">▓▓▓ ▒▒▒ ░░░ ...do not let them access the...</span>
+            <span class="sharp-word sharp-word--white">[PLEASE OR KOTHA SON]</span>
+            <span class="blur-text">▓▓▓ ▒▒▒ ...you must remember the protocol...</span>
+          </p>
+          <div class="message-teaser__lock-overlay">
+            <span class="preview__card-tag"
+              style="color: var(--red); border-color: rgba(255,0,60,0.3); background: var(--bg); display: inline-flex; box-shadow: 0 0 15px rgba(255,0,60,0.3);">TRANSMISSION
+              ENCRYPTED</span>
+          </div>
+        </div>
+      </div>
+
       <div class="preview__grid" id="preview-grid">
         <!-- JS will populate: 1 visible image, 1 visible video, + locked cards -->
       </div>
@@ -124,6 +151,9 @@
       <h1 class="vault__title glitch" data-text="VAULT OPEN">VAULT OPEN</h1>
       <p class="vault__subtitle">The capsule has been unsealed. Explore the contents below.</p>
 
+      <!-- Decrypted Message -->
+      <div class="vault__message" id="vault-message" style="display:none;"></div>
+
       <!-- Media Grid — filled by JS after API call -->
       <div class="vault__grid" id="vault-grid">
         <!-- Dynamically populated -->
@@ -148,16 +178,20 @@
       <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
     </svg>
     <!-- Muted Icon -->
-    <svg class="audio-icon audio-icon--off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none;">
+    <svg class="audio-icon audio-icon--off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+      style="display:none;">
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
       <line x1="23" y1="9" x2="17" y2="15"></line>
       <line x1="17" y1="9" x2="23" y2="15"></line>
     </svg>
   </button>
 
-  <audio id="ambient-sound" loop preload="auto" src="https://actions.google.com/sounds/v1/science_fiction/spaceship_engine.ogg"></audio>
-  <audio id="unlock-sound" preload="auto" src="https://actions.google.com/sounds/v1/doors/heavy_metal_door_open.ogg"></audio>
+  <audio id="ambient-sound" loop preload="auto"
+    src="https://actions.google.com/sounds/v1/science_fiction/spaceship_engine.ogg"></audio>
+  <audio id="unlock-sound" preload="auto"
+    src="https://actions.google.com/sounds/v1/doors/heavy_metal_door_open.ogg"></audio>
 
   <script src="/script.js" type="module"></script>
 </body>
+
 </html>
