@@ -21,6 +21,7 @@ const currentTimeEl = $('#current-time');
 const vaultGrid = $('#vault-grid');
 const vaultVideoWrapper = $('#vault-video-wrapper');
 const vaultVideo = $('#vault-video');
+const vaultMessage = $('#vault-message');
 const unlockTimeEl = $('#unlock-time');
 const previewGrid = $('#preview-grid');
 const bootSequence = $('#boot-sequence');
@@ -350,6 +351,12 @@ async function unlockVault() {
 
 function renderMedia(media) {
   if (!media) return;
+
+  // Render decrypted message
+  if (media.message && vaultMessage) {
+    vaultMessage.textContent = media.message;
+    vaultMessage.style.display = 'block';
+  }
 
   // Render images
   vaultGrid.innerHTML = '';
