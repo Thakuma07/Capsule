@@ -1,0 +1,13 @@
+{
+  "name": "digital-time-capsule",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A sealed digital time capsule that unlocks on May 15, 2026 at 23:55.",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site — no build step required.'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["time-capsule", "countdown", "vercel"],
+  "license": "MIT"
+}
