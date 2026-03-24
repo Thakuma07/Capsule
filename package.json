@@ -12,6 +12,14 @@
   "devDependencies": {
     "vite": "^5.0.0"
   },
-  "keywords": ["time-capsule", "countdown", "vercel", "vite"],
-  "license": "MIT"
+  "keywords": [
+    "time-capsule",
+    "countdown",
+    "vercel",
+    "vite"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/blob": "^2.3.1"
+  }
 }

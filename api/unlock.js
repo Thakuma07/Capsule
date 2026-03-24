@@ -1,27 +1,14 @@
+import { list } from '@vercel/blob';
+
 // ═══════════════════════════════════════════════════
 // VERCEL SERVERLESS FUNCTION — /api/unlock
-// Checks server-side time before releasing media URLs.
+// Checks server-side time before releasing media URLs from Vercel Blob.
 // ═══════════════════════════════════════════════════
 
 const UNLOCK_DATE = new Date('2026-05-15T23:55:00Z');
 
-// ─── Hidden Media Payload ───
-// These URLs are ONLY served when the server clock passes the unlock date.
-// Replace these with your actual media links before deployment.
-const MEDIA_PAYLOAD = {
-  message: "Dear Future Me,\n\nBy the time you are reading this, so much has changed. The goals we set, the files we archived... it all feels like a lifetime ago.\n\nNever forget the drive that led us here. Keep pushing boundaries, and remember to look back affectionately at the artifacts left behind in this vault.\n\n— Past You",
-  images: [
-    // Add your images here. Example:
-    // { url: '/media/image1.jpg', title: 'FRAGMENT_001', tag: 'PHOTO' },
-    // { url: '/media/image2.png', title: 'FRAGMENT_002', tag: 'ART' },
-  ],
-  video: null,
-  // Add your video here. Example:
-  // video: { url: '/media/video.mp4', poster: '/media/poster.jpg' },
-};
-
-export default function handler(req, res) {
-  // CORS headers (useful for local dev)
+export default async function handler(req, res) {
+  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -32,20 +19,53 @@ export default function handler(req, res) {
 
   const now = new Date();
 
-  if (now >= UNLOCK_DATE) {
+  // 1. Check if the vault is still locked
+  if (now < UNLOCK_DATE) {
+    return res.status(200).json({
+      unlocked: false,
+      serverTime: now.toISOString(),
+      unlockDate: UNLOCK_DATE.toISOString(),
+      message: 'The vault is still sealed. Check back later.',
+    });
+  }
+
+  // 2. Vault is Unlocked! Reach into Vercel Blob Storage...
+  try {
+    // We list all your files dynamically. 
+    // This way you just upload files to Vercel dashboard and they appear here instantly.
+    const { blobs } = await list();
+
+    // Separate Images and Videos
+    const images = blobs
+      .filter(b => b.pathname.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+      .map(b => ({
+        url: b.url,
+        title: b.pathname.replace(/^.*[\\\/]/, '').split('.')[0].toUpperCase(),
+        tag: 'DECRYPTED'
+      }));
+
+    const videoBlob = blobs.find(b => b.pathname.match(/\.(mp4|webm|mov)$/i));
+    const video = videoBlob ? {
+      url: videoBlob.url,
+      title: videoBlob.pathname.replace(/^.*[\\\/]/, '').split('.')[0].toUpperCase(),
+      tag: 'TRANSMISSION'
+    } : null;
+
     return res.status(200).json({
       unlocked: true,
       serverTime: now.toISOString(),
       unlockDate: UNLOCK_DATE.toISOString(),
-      media: MEDIA_PAYLOAD,
+      media: {
+        message: "/// VAULT CONTENTS RECOVERED ///\nThe timeline has been restored. All artifacts decrypted successfully.",
+        images: images,
+        video: video,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching from Vercel Blob:', error);
+    return res.status(500).json({
+      error: 'Failed to decrypt vault secondary layer. Check permissions.',
+      unlocked: true, // we still show it's reached the date
     });
   }
-
-  // Still locked — reveal nothing
-  return res.status(200).json({
-    unlocked: false,
-    serverTime: now.toISOString(),
-    unlockDate: UNLOCK_DATE.toISOString(),
-    message: 'The vault is still sealed. Check back later.',
-  });
 }
