@@ -23,6 +23,8 @@ const vaultVideoWrapper = $('#vault-video-wrapper');
 const vaultVideo = $('#vault-video');
 const unlockTimeEl = $('#unlock-time');
 const previewGrid = $('#preview-grid');
+const bootSequence = $('#boot-sequence');
+const bootText = $('#boot-text');
 
 // ─── Preview Teaser Config ───
 // These are VISIBLE before unlock — they're just teasers, not the real vault content.
@@ -54,6 +56,59 @@ const LOCK_SVG = `<svg class="lock-overlay__icon" viewBox="0 0 24 24" fill="none
 // ─── State ───
 let timerInterval = null;
 let isUnlocked = false;
+
+// ═══════════════════════════════════════════════════
+// TERMINAL BOOT SEQUENCE
+// ═══════════════════════════════════════════════════
+async function runBootSequence() {
+  if (!bootSequence || !bootText) {
+    init(); // Fallback if missing DOM
+    return;
+  }
+
+  // Prevent scrolling during boot
+  document.body.style.overflow = 'hidden';
+
+  const lines = [
+    'Establishing secure connection...',
+    'Bypassing firewall...',
+    'Accessing vault: TIME CAPSULE',
+    'Status: SEALED.',
+  ];
+
+  let currentText = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Type out the current line character by character
+    for (let j = 0; j < line.length; j++) {
+      currentText += line[j];
+      bootText.textContent = currentText;
+      // Random typing speed between 10ms and 50ms per character
+      await sleep(Math.random() * 40 + 10);
+    }
+    
+    currentText += '\n';
+    bootText.textContent = currentText;
+
+    // Pause briefly at the end of each line
+    await sleep(400);
+  }
+
+  // Brief pause before clearing the screen
+  await sleep(600);
+  
+  // Fade out logic
+  bootSequence.classList.add('boot-sequence--hidden');
+  document.body.style.overflow = '';
+  
+  // Wait for fade transition then start main site
+  setTimeout(() => {
+    bootSequence.style.display = 'none';
+    init();
+  }, 800);
+}
 
 // ═══════════════════════════════════════════════════
 // PARTICLE BACKGROUND
@@ -438,7 +493,7 @@ function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', runBootSequence);
 
 // ═══════════════════════════════════════════════════
 // HIDDEN FEATURE: MANIPULATE TARGET DATE
