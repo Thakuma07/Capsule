@@ -25,6 +25,11 @@ const unlockTimeEl = $('#unlock-time');
 const previewGrid = $('#preview-grid');
 const bootSequence = $('#boot-sequence');
 const bootText = $('#boot-text');
+const audioToggle = $('#audio-toggle');
+const iconOn = $('.audio-icon--on');
+const iconOff = $('.audio-icon--off');
+const ambientSound = $('#ambient-sound');
+const unlockSound = $('#unlock-sound');
 
 // ─── Preview Teaser Config ───
 // These are VISIBLE before unlock — they're just teasers, not the real vault content.
@@ -56,6 +61,30 @@ const LOCK_SVG = `<svg class="lock-overlay__icon" viewBox="0 0 24 24" fill="none
 // ─── State ───
 let timerInterval = null;
 let isUnlocked = false;
+let isMuted = true; // start muted per browser autoplay rules
+
+// ─── Audio Setup ───
+if (ambientSound) ambientSound.volume = 0.3;
+if (unlockSound) unlockSound.volume = 0.8;
+
+if (audioToggle && iconOn && iconOff) {
+  // Sync initial UI
+  iconOn.style.display = isMuted ? 'none' : 'block';
+  iconOff.style.display = isMuted ? 'block' : 'none';
+
+  audioToggle.addEventListener('click', () => {
+    isMuted = !isMuted;
+    iconOn.style.display = isMuted ? 'none' : 'block';
+    iconOff.style.display = isMuted ? 'block' : 'none';
+
+    if (isMuted) {
+      if (ambientSound) ambientSound.pause();
+    } else {
+      // Browsers may require user interaction first, this click counts!
+      if (ambientSound) ambientSound.play().catch(err => console.log('Audio error:', err));
+    }
+  });
+}
 
 // ═══════════════════════════════════════════════════
 // TERMINAL BOOT SEQUENCE
@@ -262,6 +291,11 @@ async function unlockVault() {
   countdownSection.classList.remove('section--active');
 
   await sleep(800);
+
+  // Trigger unlock sound effect if not muted
+  if (!isMuted && unlockSound) {
+    unlockSound.play().catch(e => console.log('Vault sound blocked:', e));
+  }
 
   vaultSection.classList.add('section--active');
 
