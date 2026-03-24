@@ -59,6 +59,21 @@ body {
   );
 }
 
+/* ─── Mouse Glow ─── */
+.mouse-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2; /* Below text, above background */
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+    rgba(0, 240, 255, 0.09),
+    transparent 40%
+  );
+  transition: opacity 0.5s var(--ease);
+  opacity: 0; /* Hidden until mouse moves */
+}
+
 /* ─── Particle Canvas ─── */
 #particleCanvas {
   position: fixed;
