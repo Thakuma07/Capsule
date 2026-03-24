@@ -516,6 +516,73 @@ body {
   line-height: 1.5;
 }
 
+/* ─── Message Teaser ─── */
+.message-teaser {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: clamp(1rem, 4vw, 2rem);
+  border-radius: 4px;
+  max-width: 800px;
+  margin: 2rem auto 4rem;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.message-teaser__visible {
+  color: var(--cyan);
+  font-style: italic;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 5px rgba(0, 240, 255, 0.4);
+}
+
+.message-teaser__blurred {
+  position: relative;
+  line-height: 1.8;
+}
+
+.blur-text {
+  filter: blur(5px);
+  opacity: 0.3;
+  user-select: none;
+}
+
+.sharp-word {
+  font-weight: 700;
+  opacity: 1;
+  text-shadow: 0 0 5px currentColor;
+  letter-spacing: 0.1em;
+}
+
+.sharp-word--red { color: var(--red); }
+.sharp-word--cyan { color: var(--cyan); }
+.sharp-word--white { color: var(--white); }
+
+.message-teaser__lock-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+/* ─── Vault Decrypted Message ─── */
+.vault__message {
+  background: rgba(0, 240, 255, 0.05);
+  border-left: 3px solid var(--cyan);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  max-width: 900px;
+  margin: 2rem auto 4rem;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  color: var(--white);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
 .preview__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
