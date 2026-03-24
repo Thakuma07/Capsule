@@ -30,6 +30,16 @@ const iconOn = $('.audio-icon--on');
 const iconOff = $('.audio-icon--off');
 const ambientSound = $('#ambient-sound');
 const unlockSound = $('#unlock-sound');
+const mouseGlow = $('#mouse-glow');
+
+// ─── Mouse Glow Effect ───
+document.addEventListener('mousemove', (e) => {
+  if (mouseGlow) {
+    mouseGlow.style.opacity = '1';
+    mouseGlow.style.setProperty('--mouse-x', `${e.clientX}px`);
+    mouseGlow.style.setProperty('--mouse-y', `${e.clientY}px`);
+  }
+});
 
 // ─── Preview Teaser Config ───
 // These are VISIBLE before unlock — they're just teasers, not the real vault content.
