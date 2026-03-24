@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Time Capsule — Locked Until May 15, 2026</title>
+  <meta name="description" content="A sealed digital time capsule. The vault opens on May 15, 2026 at 23:55. What's inside remains a mystery until then." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- ─── Scan-line Overlay ─── -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- ─── Particle Canvas ─── -->
+  <canvas id="particleCanvas" aria-hidden="true"></canvas>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- PRE-LOCK : COUNTDOWN                               -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <main id="countdown-section" class="section section--active">
+    <!-- Status Bar -->
+    <header class="status-bar">
+      <div class="status-bar__left">
+        <span class="status-dot status-dot--locked"></span>
+        <span class="status-label">VAULT STATUS: <strong>SEALED</strong></span>
+      </div>
+      <div class="status-bar__right">
+        <span class="status-label" id="current-time"></span>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero">
+      <p class="hero__eyebrow">/// A SECURE REPOSITORY FOR DIGITAL MEMORIES AND ARTIFACTS</p>
+      <h1 class="hero__title" aria-label="TIME CAPSULE">
+        <span class="glitch" data-text="TIME">TIME</span>
+        <div class="hero__title-circle">
+          <img src="/assets/anshu ram.jpeg" alt="Anshu Ram" loading="lazy" />
+        </div>
+        <span class="glitch" data-text="CAPSULE">CAPSULE</span>
+      </h1>
+      <p class="hero__subtitle">Vault unlocks on <span class="cyan">May 15, 2026</span> at <span class="cyan">23:55</span></p>
+
+      <!-- Timer -->
+      <div class="timer" id="timer" role="timer" aria-label="Countdown to vault unlock">
+        <div class="timer__block">
+          <span class="timer__value" id="days">00</span>
+          <span class="timer__label">DAYS</span>
+        </div>
+        <span class="timer__sep">:</span>
+        <div class="timer__block">
+          <span class="timer__value" id="hours">00</span>
+          <span class="timer__label">HOURS</span>
+        </div>
+        <span class="timer__sep">:</span>
+        <div class="timer__block">
+          <span class="timer__value" id="minutes">00</span>
+          <span class="timer__label">MINS</span>
+        </div>
+        <span class="timer__sep">:</span>
+        <div class="timer__block">
+          <span class="timer__value" id="seconds">00</span>
+          <span class="timer__label">SECS</span>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrapper">
+        <div class="progress-bar">
+          <div class="progress-bar__fill" id="progress-fill"></div>
+        </div>
+        <p class="progress-text" id="progress-text">0% complete</p>
+      </div>
+    </div>
+
+    <!-- ─── Vault Preview (Teaser) ─── -->
+    <section class="preview" id="preview-section">
+      <div class="preview__header">
+        <span class="preview__line"></span>
+        <h2 class="preview__title">VAULT PREVIEW</h2>
+        <span class="preview__line"></span>
+      </div>
+      <p class="preview__desc">A glimpse of what awaits. The full vault unlocks when the timer hits zero.</p>
+
+      <div class="preview__grid" id="preview-grid">
+        <!-- JS will populate: 1 visible image, 1 visible video, + locked cards -->
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <p>&copy; 2026 DIGITAL TIME CAPSULE &mdash; ALL RIGHTS RESERVED</p>
+    </footer>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- POST-LOCK : MEDIA VAULT                            -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <main id="vault-section" class="section">
+    <header class="status-bar">
+      <div class="status-bar__left">
+        <span class="status-dot status-dot--unlocked"></span>
+        <span class="status-label">VAULT STATUS: <strong>UNLOCKED</strong></span>
+      </div>
+      <div class="status-bar__right">
+        <span class="status-label" id="unlock-time"></span>
+      </div>
+    </header>
+
+    <div class="vault">
+      <p class="vault__eyebrow">/// VAULT CONTENTS REVEALED</p>
+      <h1 class="vault__title glitch" data-text="VAULT OPEN">VAULT OPEN</h1>
+      <p class="vault__subtitle">The capsule has been unsealed. Explore the contents below.</p>
+
+      <!-- Media Grid — filled by JS after API call -->
+      <div class="vault__grid" id="vault-grid">
+        <!-- Dynamically populated -->
+      </div>
+
+      <!-- Video Player -->
+      <div class="vault__video-wrapper" id="vault-video-wrapper" style="display:none;">
+        <video id="vault-video" controls playsinline preload="metadata"></video>
+      </div>
+    </div>
+
+    <footer class="page-footer">
+      <p>&copy; 2026 DIGITAL TIME CAPSULE &mdash; VAULT UNSEALED</p>
+    </footer>
+  </main>
+
+  <script src="/script.js" type="module"></script>
+</body>
+</html>
