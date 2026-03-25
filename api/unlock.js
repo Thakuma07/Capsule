@@ -61,8 +61,10 @@ export default async function handler(req, res) {
     };
   };
 
+  const cheatFlag = req.query?.cheat === 'true';
+
   // 3. Handle Locked State
-  if (now < UNLOCK_DATE) {
+  if (now < UNLOCK_DATE && !cheatFlag) {
     return res.status(200).json({
       unlocked: false,
       serverTime: now.toISOString(),

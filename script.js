@@ -504,7 +504,7 @@ async function unlockVault() {
     unlocked: true,
     media: {
       images: [
-        { url: 'public/assets/anshu ram.jpeg', title: 'Anshu Ram', tag: 'IMAGE' },
+        { url: '/assets/anshu ram.jpeg', title: 'Anshu Ram', tag: 'IMAGE' }, // Fixed path
         { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'Earth Orbit', tag: 'IMAGE' },
         { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'Jupiter', tag: 'IMAGE' }
       ],
@@ -516,7 +516,8 @@ async function unlockVault() {
 
   let data;
   if (isCheatMode) {
-    data = MOCK_UNLOCKED; // Bypass server check if testing via Ctrl+Shift+D
+    // Attempt real fetch even in cheat mode, with a flag to bypass the server's date check.
+    data = await safeFetch(`${API_ENDPOINT}?cheat=true`, MOCK_UNLOCKED);
   } else {
     data = await safeFetch(API_ENDPOINT, MOCK_UNLOCKED);
   }
@@ -617,7 +618,7 @@ async function init() {
     unlocked: true,
     media: {
       images: [
-        { url: 'public/assets/anshu ram.jpeg', title: 'Anshu Ram', tag: 'IMAGE' },
+        { url: '/assets/anshu ram.jpeg', title: 'Anshu Ram', tag: 'IMAGE' },
         { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'Earth Orbit', tag: 'IMAGE' },
         { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'Jupiter', tag: 'IMAGE' }
       ],
