@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════ */
 
 // ─── Config ───
-let TARGET_DATE = new Date('2026-05-15T23:55:00');
+let TARGET_DATE = new Date('2026-05-15T23:55:00Z');
 const CREATION_DATE = new Date('2026-03-24T00:00:00');
 const API_ENDPOINT = '/api/unlock';
 
@@ -550,7 +550,28 @@ function init() {
     // Start countdown
     updateCountdown();
     timerInterval = setInterval(updateCountdown, 1000);
-    // Render teaser preview below the timer
+
+    // Fetch dynamic teasers from API
+    fetch(API_ENDPOINT)
+      .then(r => r.json())
+      .then(data => {
+        if (data.teasers) {
+          if (data.teasers.image) {
+            PREVIEW_CONFIG.visibleImage = data.teasers.image;
+          }
+          if (data.teasers.video) {
+            PREVIEW_CONFIG.visibleVideo = data.teasers.video;
+          }
+          if (data.teasers.totalLockedCount !== undefined) {
+             PREVIEW_CONFIG.lockedCount = data.teasers.totalLockedCount;
+          }
+          // Re-render preview with real data
+          renderPreview();
+        }
+      })
+      .catch(err => console.error('Failed to fetch teasers:', err));
+
+    // Initial render with placeholders (will be replaced by real data above)
     renderPreview();
   }
 }
