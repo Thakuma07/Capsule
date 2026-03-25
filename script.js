@@ -650,14 +650,35 @@ async function init() {
   }
 }
 document.addEventListener('DOMContentLoaded', runBootSequence);
+// ─── Mobile Testing (Tap status bar 5 times to cheat) ───
+let tapCount = 0;
+let lastTap = 0;
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.status-bar')) {
+    const now = Date.now();
+    if (now - lastTap > 1000) tapCount = 0; // Reset if too long between taps
+    tapCount++;
+    lastTap = now;
+
+    if (tapCount >= 5) {
+      tapCount = 0;
+      triggerCheat();
+    }
+  }
+});
+
+function triggerCheat() {
+  const newDateStr = prompt('Override date:', new Date(Date.now() - 1000).toISOString().slice(0, 19));
+  if (newDateStr) { 
+    TARGET_DATE = new Date(newDateStr); 
+    isCheatMode = true; 
+    updateCountdown(); 
+  }
+}
+
 document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
     e.preventDefault();
-    const newDateStr = prompt('Override date:', new Date(Date.now() - 1000).toISOString().slice(0, 19));
-    if (newDateStr) { 
-      TARGET_DATE = new Date(newDateStr); 
-      isCheatMode = true; 
-      updateCountdown(); 
-    }
+    triggerCheat();
   }
 });
