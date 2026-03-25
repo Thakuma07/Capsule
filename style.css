@@ -4,21 +4,53 @@
 
 /* ─── Design Tokens ─── */
 :root {
-  --bg:        #0a0a0a;
-  --surface:   #111111;
-  --surface-2: #1a1a1a;
-  --border:    #222222;
-  --text:      #e0e0e0;
-  --text-dim:  #666666;
-  --cyan:      #00f0ff;
-  --cyan-dim:  #00f0ff66;
-  --cyan-glow: 0 0 20px #00f0ff44, 0 0 60px #00f0ff22;
-  --white:     #ffffff;
-  --red:       #ff003c;
-  --green:     #00ff88;
+  /* LIGHT THEME (Default) */
+  --bg:        #FFFFFF; /* White */
+  --surface:   #D4D4D4; /* Light Gray */
+  --surface-2: #B3B3B3; /* Mid Gray */
+  --border:    #D4D4D4; 
+  --text:      #2B2B2B; /* Dark Gray */
+  --text-dim:  #666666; 
+  --cyan:      #2B2B2B; 
+  --cyan-dim:  rgba(43, 43, 43, 0.2);
+  --cyan-glow: 0 0 10px rgba(43, 43, 43, 0.1);
+  --white:     #2B2B2B; 
+  --red:       #DC2626; 
+  --green:     #059669;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --ease:      cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme='dark'] {
+  /* DARK THEME (Forest Green Palette) */
+  --bg:        #3D4127; 
+  --surface:   #4A4F32; 
+  --surface-2: #636B2F; 
+  --border:    #636B2F; 
+  --text:      #BAC095; 
+  --text-dim:  #636B2F; 
+  --cyan:      #DADE95; 
+  --cyan-dim:  rgba(218, 222, 149, 0.4);
+  --cyan-glow: 0 0 20px rgba(218, 222, 149, 0.3), 0 0 60px rgba(218, 222, 149, 0.1);
+  --white:     #DADE95; 
+  --red:       #FF5722; 
+  --green:     #BAC095;
+}
+
+[data-theme='light'] {
+  --bg:        #FFFFFF;
+  --surface:   #D4D4D4;
+  --surface-2: #B3B3B3;
+  --border:    #D4D4D4;
+  --text:      #2B2B2B;
+  --text-dim:  #666666;
+  --cyan:      #2B2B2B;
+  --cyan-dim:  rgba(43, 43, 43, 0.2);
+  --cyan-glow: 0 0 10px rgba(43, 43, 43, 0.1);
+  --white:     #2B2B2B;
+  --red:       #DC2626;
+  --green:     #059669;
 }
 
 /* ─── Reset ─── */
@@ -42,6 +74,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+  transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
 }
 
 /* ─── Scanlines Overlay ─── */
@@ -67,7 +100,7 @@ body {
   z-index: 2; /* Below text, above background */
   background: radial-gradient(
     800px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
-    rgba(0, 240, 255, 0.09),
+    rgba(218, 222, 149, 0.12),
     transparent 40%
   );
   transition: opacity 0.5s var(--ease);
@@ -145,6 +178,53 @@ body {
   box-shadow: var(--cyan-glow);
 }
 
+/* ─── Theme Toggle ─── */
+.theme-toggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s var(--ease);
+}
+
+.theme-toggle:hover {
+  border-color: var(--cyan);
+  transform: translateY(-2px);
+  box-shadow: var(--cyan-glow);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+[data-theme='light'] .status-bar {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+[data-theme='light'] .timer__block {
+  background: #FFFFFF;
+}
+
+[data-theme='light'] .mouse-glow {
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+    rgba(179, 179, 179, 0.08),
+    transparent 40%
+  );
+}
+
 .audio-icon {
   width: 20px;
   height: 20px;
@@ -183,6 +263,7 @@ body {
   border-radius: 6px;
   background: var(--surface);
   backdrop-filter: blur(10px);
+  transition: all 0.4s var(--ease);
 }
 
 .status-bar__left,
@@ -371,7 +452,7 @@ body {
   border-radius: 10px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.3s;
+  transition: all 0.4s var(--ease);
 }
 
 .timer__block::before {
@@ -446,7 +527,7 @@ body {
 .progress-bar__fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--cyan), #00ff88);
+  background: linear-gradient(90deg, var(--cyan), var(--green));
   border-radius: 2px;
   transition: width 1s var(--ease);
   box-shadow: 0 0 10px var(--cyan-dim);
@@ -529,13 +610,14 @@ body {
   font-size: clamp(0.85rem, 2vw, 1.1rem);
   color: var(--text-dim);
   line-height: 1.6;
+  transition: all 0.4s var(--ease);
 }
 
 .message-teaser__visible {
   color: var(--cyan);
   font-style: italic;
   margin-bottom: 0.5rem;
-  text-shadow: 0 0 5px rgba(0, 240, 255, 0.4);
+  text-shadow: 0 0 5px rgba(218, 222, 149, 0.4);
 }
 
 .message-teaser__blurred {
@@ -570,7 +652,7 @@ body {
 
 /* ─── Vault Decrypted Message ─── */
 .vault__message {
-  background: rgba(0, 240, 255, 0.05);
+  background: rgba(218, 222, 149, 0.05);
   border-left: 3px solid var(--cyan);
   padding: clamp(1.5rem, 5vw, 2.5rem);
   max-width: 900px;
@@ -600,7 +682,7 @@ body {
   border: 1px solid var(--border);
   background: var(--surface);
   position: relative;
-  transition: transform 0.4s var(--ease), border-color 0.3s, box-shadow 0.3s;
+  transition: all 0.4s var(--ease);
 }
 
 .preview__card:hover {
@@ -696,7 +778,7 @@ body {
   justify-content: center;
   gap: 0.6rem;
   z-index: 2;
-  background: rgba(10, 10, 10, 0.45);
+  background: rgba(61, 65, 39, 0.65);
   backdrop-filter: blur(2px);
 }
 
@@ -741,7 +823,7 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(0, 240, 255, 0.15);
+  background: rgba(218, 222, 149, 0.15);
   border: 2px solid var(--cyan);
   display: flex;
   align-items: center;
@@ -753,7 +835,7 @@ body {
 
 .preview__card--video:hover .play-badge {
   transform: translate(-50%, -50%) scale(1.1);
-  background: rgba(0, 240, 255, 0.3);
+  background: rgba(218, 222, 149, 0.3);
 }
 
 .play-badge svg {
@@ -799,7 +881,7 @@ body {
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--surface);
-  transition: transform 0.4s var(--ease), border-color 0.3s, box-shadow 0.3s;
+  transition: all 0.4s var(--ease);
   cursor: pointer;
   position: relative;
 }
