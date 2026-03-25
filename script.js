@@ -498,40 +498,27 @@ async function unlockVault() {
   vaultSection.classList.add('section--active');
   if (unlockTimeEl) unlockTimeEl.textContent = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' });
   vaultGrid.innerHTML = `<div class="vault__loader" style="grid-column: 1 / -1;"><div class="spinner"></div><p>DECRYPTING VAULT CONTENTS...</p></div>`;
-  // Load vaulted media (Robust loading with local fallback)
-  try {
-    const response = await fetch(API_ENDPOINT); // Changed from '/api/unlock' to API_ENDPOINT to match existing code
-    if (!response.ok) throw new Error('API not available');
-    
-    const contentType = response.headers.get("content-type");
-    let data;
-    if (contentType && contentType.indexOf("application/json") !== -1) {
-        data = await response.json();
-    } else {
-        throw new Error('Not JSON response');
+  
+  const MOCK_UNLOCKED = {
+    unlocked: true,
+    media: {
+      images: [
+        { url: 'public/assets/anshu ram.jpeg', title: 'Anshu Ram', tag: 'IMAGE' },
+        { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'Earth Orbit', tag: 'IMAGE' },
+        { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'Jupiter', tag: 'IMAGE' }
+      ],
+      videos: [
+        { url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4', title: 'Flower Bloom Video', tag: 'VIDEO' }
+      ]
     }
+  };
 
-    if (!data.unlocked) {
-      vaultGrid.innerHTML = `<div class="vault__loader" style="grid-column: 1 / -1;"><p style="color: var(--red);">VAULT SEALED.</p></div>`;
-      return;
-    }
-    renderMedia(data.media); // Kept renderMedia as per original code
-  } catch (err) {
-    console.warn("Using local mock media (API backend missing or error):", err.message);
-    // FALLBACK MOCK MEDIA FOR LOCAL PREVIEW
-    const mockMedia = {
-      unlocked: true,
-      media: {
-        images: [
-          { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'Earth Orbit', tag: 'IMAGE' },
-          { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'Jupiter', tag: 'IMAGE' },
-          { url: 'https://images.unsplash.com/photo-1630839437035-dac17da580d0', title: 'Saturn Rings', tag: 'IMAGE' }
-        ],
-        videos: []
-      }
-    };
-    renderMedia(mockMedia.media); // Use mockMedia.media for renderMedia
+  const data = await safeFetch(API_ENDPOINT, MOCK_UNLOCKED);
+  if (!data.unlocked) {
+    vaultGrid.innerHTML = `<div class="vault__loader" style="grid-column: 1 / -1;"><p style="color: var(--red);">VAULT SEALED.</p></div>`;
+    return;
   }
+  renderMedia(data.media);
 }
 
 function renderMedia(media) {
@@ -623,11 +610,13 @@ async function init() {
     unlocked: true,
     media: {
       images: [
-        { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'FRAG_001', tag: 'IMAGE' },
-        { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'FRAG_002', tag: 'IMAGE' },
-        { url: 'https://images.unsplash.com/photo-1630839437035-dac17da580d0', title: 'FRAG_003', tag: 'IMAGE' }
+        { url: 'public/assets/anshu ram.jpeg', title: 'Anshu Ram', tag: 'IMAGE' },
+        { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'Earth Orbit', tag: 'IMAGE' },
+        { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'Jupiter', tag: 'IMAGE' }
       ],
-      videos: []
+      videos: [
+        { url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4', title: 'Flower Bloom Video', tag: 'VIDEO' }
+      ]
     }
   };
 
