@@ -22,6 +22,32 @@
   --ease:      cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface);
+  border: 2px solid var(--bg);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface) var(--bg);
+}
+
+
 [data-theme='dark'] {
   /* DARK THEME (Forest Green Palette) */
   --bg:        #3D4127; 
@@ -114,7 +140,7 @@ body {
   width: 100%;
   height: 100%;
   z-index: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 /* ─── Boot Sequence ─── */
@@ -244,6 +270,7 @@ body {
   visibility: hidden;
   transition: opacity 0.8s var(--ease), visibility 0.8s;
   overflow-y: auto;
+  pointer-events: none; /* Let events pass through to canvas */
 }
 
 .section--active {
@@ -264,6 +291,7 @@ body {
   background: var(--surface);
   backdrop-filter: blur(10px);
   transition: all 0.4s var(--ease);
+  pointer-events: auto; /* Enable clicks on UI */
 }
 
 .status-bar__left,
@@ -453,6 +481,7 @@ body {
   position: relative;
   overflow: hidden;
   transition: all 0.4s var(--ease);
+  pointer-events: auto;
 }
 
 .timer__block::before {
@@ -514,6 +543,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  pointer-events: auto;
 }
 
 .progress-bar {
@@ -611,6 +641,7 @@ body {
   color: var(--text-dim);
   line-height: 1.6;
   transition: all 0.4s var(--ease);
+  pointer-events: auto;
 }
 
 .message-teaser__visible {
