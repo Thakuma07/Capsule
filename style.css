@@ -200,6 +200,13 @@ body {
   z-index: 40;
   transition: all 0.3s var(--ease);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.audio-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .audio-toggle:hover {
@@ -233,9 +240,17 @@ body {
   box-shadow: var(--cyan-glow);
 }
 
+.theme-toggle img,
 .theme-toggle svg {
   width: 20px;
   height: 20px;
+  display: block;
+}
+
+/* Ensure icons are visible in Light Mode since their default color is sage */
+[data-theme='light'] .theme-icon,
+[data-theme='light'] .audio-icon {
+  filter: brightness(0) saturate(100%); /* Makes sage icons black/dark gray */
 }
 
 [data-theme='light'] .status-bar {
