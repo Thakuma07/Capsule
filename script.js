@@ -6,6 +6,7 @@
 let TARGET_DATE = new Date('2026-05-15T23:55:00Z');
 const CREATION_DATE = new Date('2026-03-24T00:00:00');
 const API_ENDPOINT = '/api/unlock';
+let isCheatMode = false;
 
 // ─── DOM Refs ───
 const $ = (sel) => document.querySelector(sel);
@@ -513,7 +514,13 @@ async function unlockVault() {
     }
   };
 
-  const data = await safeFetch(API_ENDPOINT, MOCK_UNLOCKED);
+  let data;
+  if (isCheatMode) {
+    data = MOCK_UNLOCKED; // Bypass server check if testing via Ctrl+Shift+D
+  } else {
+    data = await safeFetch(API_ENDPOINT, MOCK_UNLOCKED);
+  }
+
   if (!data.unlocked) {
     vaultGrid.innerHTML = `<div class="vault__loader" style="grid-column: 1 / -1;"><p style="color: var(--red);">VAULT SEALED.</p></div>`;
     return;
@@ -646,6 +653,10 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
     e.preventDefault();
     const newDateStr = prompt('Override date:', new Date(Date.now() - 1000).toISOString().slice(0, 19));
-    if (newDateStr) { TARGET_DATE = new Date(newDateStr); updateCountdown(); }
+    if (newDateStr) { 
+      TARGET_DATE = new Date(newDateStr); 
+      isCheatMode = true; 
+      updateCountdown(); 
+    }
   }
 });
