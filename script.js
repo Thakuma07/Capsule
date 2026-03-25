@@ -118,7 +118,7 @@ async function runBootSequence() {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
+
     // Type out the current line character by character
     for (let j = 0; j < line.length; j++) {
       currentText += line[j];
@@ -126,7 +126,7 @@ async function runBootSequence() {
       // Random typing speed between 10ms and 50ms per character
       await sleep(Math.random() * 40 + 10);
     }
-    
+
     currentText += '\n';
     bootText.textContent = currentText;
 
@@ -136,11 +136,11 @@ async function runBootSequence() {
 
   // Brief pause before clearing the screen
   await sleep(600);
-  
+
   // Fade out logic
   bootSequence.classList.add('boot-sequence--hidden');
   document.body.style.overflow = '';
-  
+
   // Wait for fade transition then start main site
   setTimeout(() => {
     bootSequence.style.display = 'none';
@@ -370,7 +370,7 @@ function renderMedia(media) {
       const card = document.createElement('div');
       card.className = `vault__card fade-up ${item.type === 'video' ? 'vault__card--video' : ''}`;
       card.style.animationDelay = `${i * 0.12}s`;
-      
+
       if (item.type === 'image') {
         card.innerHTML = `
           <img src="${item.url}" alt="${item.title}" loading="lazy" />
@@ -566,16 +566,16 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
     e.preventDefault();
     const newDateStr = prompt(
-      '// HIDDEN OVERRIDE //\nEnter new target date (YYYY-MM-DDTHH:MM:SS):\nExample for unlocking right now: ' + 
+      '// HIDDEN OVERRIDE //\nEnter new target date (YYYY-MM-DDTHH:MM:SS):\nExample for unlocking right now: ' +
       new Date(Date.now() - 1000).toISOString().slice(0, 19)
     );
-    
+
     if (newDateStr) {
       const parsedDate = new Date(newDateStr);
       if (!isNaN(parsedDate.getTime())) {
         TARGET_DATE = parsedDate;
         console.log('Target date manually overridden to:', TARGET_DATE);
-        
+
         // Force an immediate UI update
         updateCountdown();
       } else {
