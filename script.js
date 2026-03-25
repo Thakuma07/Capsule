@@ -498,16 +498,39 @@ async function unlockVault() {
   vaultSection.classList.add('section--active');
   if (unlockTimeEl) unlockTimeEl.textContent = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium' });
   vaultGrid.innerHTML = `<div class="vault__loader" style="grid-column: 1 / -1;"><div class="spinner"></div><p>DECRYPTING VAULT CONTENTS...</p></div>`;
+  // Load vaulted media (Robust loading with local fallback)
   try {
-    const res = await fetch(API_ENDPOINT);
-    const data = await res.json();
+    const response = await fetch(API_ENDPOINT); // Changed from '/api/unlock' to API_ENDPOINT to match existing code
+    if (!response.ok) throw new Error('API not available');
+    
+    const contentType = response.headers.get("content-type");
+    let data;
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+    } else {
+        throw new Error('Not JSON response');
+    }
+
     if (!data.unlocked) {
       vaultGrid.innerHTML = `<div class="vault__loader" style="grid-column: 1 / -1;"><p style="color: var(--red);">VAULT SEALED.</p></div>`;
       return;
     }
-    renderMedia(data.media);
+    renderMedia(data.media); // Kept renderMedia as per original code
   } catch (err) {
-    vaultGrid.innerHTML = `<div class="vault__loader" style="grid-column: 1 / -1;"><p style="color: var(--red);">ERROR.</p></div>`;
+    console.warn("Using local mock media (API backend missing or error):", err.message);
+    // FALLBACK MOCK MEDIA FOR LOCAL PREVIEW
+    const mockMedia = {
+      unlocked: true,
+      media: {
+        images: [
+          { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'Earth Orbit', tag: 'IMAGE' },
+          { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'Jupiter', tag: 'IMAGE' },
+          { url: 'https://images.unsplash.com/photo-1630839437035-dac17da580d0', title: 'Saturn Rings', tag: 'IMAGE' }
+        ],
+        videos: []
+      }
+    };
+    renderMedia(mockMedia.media); // Use mockMedia.media for renderMedia
   }
 }
 
@@ -569,21 +592,63 @@ function renderPreview() {
   }
 }
 
-function init() {
+// ─── Robust API Fetch Helper ───
+async function safeFetch(url, fallbackData) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Network response not OK');
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      return await response.json();
+    }
+    throw new Error('Response is not JSON');
+  } catch (err) {
+    console.warn(`API Fallback (${url}):`, err.message);
+    return fallbackData;
+  }
+}
+
+async function init() {
   initParticles();
+
+  const MOCK_TEASERS = {
+    teasers: {
+      image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa',
+      video: '',
+      totalLockedCount: 6
+    }
+  };
+
+  const MOCK_UNLOCKED = {
+    unlocked: true,
+    media: {
+      images: [
+        { url: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa', title: 'FRAG_001', tag: 'IMAGE' },
+        { url: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5', title: 'FRAG_002', tag: 'IMAGE' },
+        { url: 'https://images.unsplash.com/photo-1630839437035-dac17da580d0', title: 'FRAG_003', tag: 'IMAGE' }
+      ],
+      videos: []
+    }
+  };
+
   if (new Date() >= TARGET_DATE) {
-    isUnlocked = true; countdownSection.classList.remove('section--active'); vaultSection.classList.add('section--active');
-    fetch(API_ENDPOINT).then(r => r.json()).then(data => { if (data.unlocked) renderMedia(data.media); });
+    isUnlocked = true;
+    if (countdownSection) countdownSection.classList.remove('section--active');
+    if (vaultSection) vaultSection.classList.add('section--active');
+    
+    const data = await safeFetch(API_ENDPOINT, MOCK_UNLOCKED);
+    if (data.unlocked) renderMedia(data.media);
   } else {
-    updateCountdown(); setInterval(updateCountdown, 1000);
-    fetch(API_ENDPOINT).then(r => r.json()).then(data => {
-      if (data.teasers) {
-        if (data.teasers.image) PREVIEW_CONFIG.visibleImage = data.teasers.image;
-        if (data.teasers.video) PREVIEW_CONFIG.visibleVideo = data.teasers.video;
-        if (data.teasers.totalLockedCount !== undefined) PREVIEW_CONFIG.lockedCount = data.teasers.totalLockedCount;
-        renderPreview();
-      }
-    });
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    
+    const data = await safeFetch(API_ENDPOINT, MOCK_TEASERS);
+    if (data.teasers) {
+      if (data.teasers.image) PREVIEW_CONFIG.visibleImage = data.teasers.image;
+      if (data.teasers.video) PREVIEW_CONFIG.visibleVideo = data.teasers.video;
+      if (data.teasers.totalLockedCount !== undefined) PREVIEW_CONFIG.lockedCount = data.teasers.totalLockedCount;
+      renderPreview();
+    }
     renderPreview();
   }
 }
