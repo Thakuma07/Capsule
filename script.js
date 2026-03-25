@@ -284,16 +284,61 @@ function initParticles() {
   // --- Space Elements: Planets, UFO, etc ---
   function initSpaceObjects() {
     spaceObjects = [
-      { type: 'saturn', x: canvas.width * 0.85, y: canvas.height * 0.2, s: 35, angle: 0, rot: 0.005 },
-      { type: 'jupiter', x: canvas.width * 0.1, y: canvas.height * 0.3, s: 45, rot: 0.003, t: 0 },
-      { type: 'mars', x: canvas.width * 0.7, y: canvas.height * 0.75, s: 18, rot: 0.008, t: 0 },
-      { type: 'earth', x: canvas.width * 0.25, y: canvas.height * 0.15, s: 22, rot: 0.004, t: 0 },
-      { type: 'moon', x: canvas.width * 0.2, y: canvas.height * 0.8, s: 12, rot: 0.002, t: 0 },
-      { type: 'ufo', x: canvas.width * 0.45, y: canvas.height * 0.55, t: 0 },
-      { type: 'satellite', x: 200, y: 150, vx: 0.2, vy: 0.08 },
-      { type: 'asteroid', x: canvas.width * 0.6, y: canvas.height * 0.85, s: 5 }
+      { type: 'saturn', x: canvas.width * 0.85, y: canvas.height * 0.2, s: 35, angle: 0, rot: 0.005, id: 1 },
+      { type: 'jupiter', x: canvas.width * 0.1, y: canvas.height * 0.3, s: 45, rot: 0.003, t: 0, id: 2 },
+      { type: 'mars', x: canvas.width * 0.7, y: canvas.height * 0.75, s: 18, rot: 0.008, t: 0, id: 3 },
+      { type: 'earth', x: canvas.width * 0.25, y: canvas.height * 0.15, s: 22, rot: 0.004, t: 0, id: 4 },
+      { type: 'moon', x: canvas.width * 0.2, y: canvas.height * 0.8, s: 12, rot: 0.002, t: 0, id: 5 },
+      { type: 'ufo', x: canvas.width * 0.45, y: canvas.height * 0.55, t: 0, id: 6 },
+      { type: 'satellite', x: 200, y: 150, vx: 0.2, vy: 0.08, id: 7 },
+      { type: 'asteroid', x: canvas.width * 0.6, y: canvas.height * 0.85, s: 5, id: 8 }
     ];
   }
+
+  // --- INTERACTIVE DRAGGING ---
+  let draggedObj = null;
+  let dragOffset = { x: 0, y: 0 };
+
+  function handleInteractionStart(x, y) {
+    for (let i = spaceObjects.length - 1; i >= 0; i--) {
+      const obj = spaceObjects[i];
+      const dist = Math.sqrt((x - obj.x) ** 2 + (y - obj.y) ** 2);
+      if (dist < (obj.s || 20) + 10) { // Check if click is near object radius
+        draggedObj = obj;
+        dragOffset.x = x - obj.x;
+        dragOffset.y = y - obj.y;
+        document.body.style.cursor = 'grabbing';
+        break;
+      }
+    }
+  }
+
+  function handleInteractionMove(x, y) {
+    if (draggedObj) {
+      draggedObj.x = x - dragOffset.x;
+      draggedObj.y = y - dragOffset.y;
+    }
+  }
+
+  function handleInteractionEnd() {
+    draggedObj = null;
+    document.body.style.cursor = '';
+  }
+
+  canvas.addEventListener('mousedown', (e) => handleInteractionStart(e.clientX, e.clientY));
+  window.addEventListener('mousemove', (e) => handleInteractionMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', handleInteractionEnd);
+
+  // Touch Support
+  canvas.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    handleInteractionStart(touch.clientX, touch.clientY);
+  });
+  window.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    handleInteractionMove(touch.clientX, touch.clientY);
+  });
+  window.addEventListener('touchend', handleInteractionEnd);
 
   function drawObject(obj) {
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -358,15 +403,19 @@ function initParticles() {
     }
     else if (obj.type === 'ufo') {
       obj.t += 0.05;
-      ctx.translate(Math.sin(obj.t) * 15, Math.cos(obj.t * 0.4) * 8);
+      if (draggedObj !== obj) {
+        ctx.translate(Math.sin(obj.t) * 15, Math.cos(obj.t * 0.4) * 8);
+      }
       ctx.beginPath(); ctx.ellipse(0, 0, 16, 6, 0, 0, Math.PI * 2);
       ctx.fillStyle = mainCol; ctx.fill();
       ctx.beginPath(); ctx.arc(0, -3, 6, 0, Math.PI, true);
       ctx.fillStyle = isLight ? '#BAC095' : '#DADE95'; ctx.fill();
     }
     else if (obj.type === 'satellite') {
-      obj.x += obj.vx; obj.y += obj.vy;
-      if (obj.x > canvas.width) obj.x = -50;
+      if (draggedObj !== obj) {
+        obj.x += obj.vx; obj.y += obj.vy;
+        if (obj.x > canvas.width) obj.x = -50;
+      }
       ctx.fillStyle = mainCol; ctx.fillRect(0, 0, 10, 5);
       ctx.fillRect(3, -4, 4, 13);
     }
@@ -374,6 +423,11 @@ function initParticles() {
       ctx.rotate(Date.now() * 0.001);
       ctx.fillStyle = accentCol;
       ctx.fillRect(-obj.s, -obj.s, obj.s * 2, obj.s * 2);
+    }
+
+    if (draggedObj === obj) {
+      ctx.beginPath(); ctx.arc(0, 0, (obj.s || 20) + 5, 0, Math.PI * 2);
+      ctx.strokeStyle = highlightCol; ctx.lineWidth = 1; ctx.stroke();
     }
 
     ctx.restore();
