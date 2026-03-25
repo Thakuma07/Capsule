@@ -86,17 +86,19 @@ if (audioToggle && iconOn && iconOff) {
   });
 }
 
-// ─── Theme Toggle Logic ───
+// ─── Theme Toggle Logic (Resets to Light on Reload) ───
 if (themeToggle && sunIcon && moonIcon) {
-  const currentTheme = localStorage.getItem('theme') || 'light';
+  // Always start as light mode on load
+  const currentTheme = 'light';
   document.documentElement.setAttribute('data-theme', currentTheme);
   updateThemeIcons(currentTheme);
 
   themeToggle.addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
+    
     document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    // Removed persistence so it resets on reload
     updateThemeIcons(newTheme);
   });
 }
@@ -299,15 +301,19 @@ function initParticles() {
   let draggedObj = null;
   let dragOffset = { x: 0, y: 0 };
 
-  function handleInteractionStart(x, y) {
+  function handleInteractionStart(e, x, y) {
+    // If we click on a button, toggle or card, ignore the drag
+    if (e.target.closest('button, .status-bar, .preview__card, .vault__card, .timer__block, .progress-wrapper')) return;
+
     for (let i = spaceObjects.length - 1; i >= 0; i--) {
       const obj = spaceObjects[i];
       const dist = Math.sqrt((x - obj.x) ** 2 + (y - obj.y) ** 2);
-      if (dist < (obj.s || 20) + 10) { // Check if click is near object radius
+      if (dist < (obj.s || 20) + 15) { 
         draggedObj = obj;
         dragOffset.x = x - obj.x;
         dragOffset.y = y - obj.y;
         document.body.style.cursor = 'grabbing';
+        e.preventDefault(); // Only prevent default if we've hit an object
         break;
       }
     }
@@ -325,19 +331,22 @@ function initParticles() {
     document.body.style.cursor = '';
   }
 
-  canvas.addEventListener('mousedown', (e) => handleInteractionStart(e.clientX, e.clientY));
+  window.addEventListener('mousedown', (e) => handleInteractionStart(e, e.clientX, e.clientY));
   window.addEventListener('mousemove', (e) => handleInteractionMove(e.clientX, e.clientY));
   window.addEventListener('mouseup', handleInteractionEnd);
 
   // Touch Support
-  canvas.addEventListener('touchstart', (e) => {
+  window.addEventListener('touchstart', (e) => {
     const touch = e.touches[0];
-    handleInteractionStart(touch.clientX, touch.clientY);
-  });
+    handleInteractionStart(e, touch.clientX, touch.clientY);
+  }, { passive: false });
   window.addEventListener('touchmove', (e) => {
-    const touch = e.touches[0];
-    handleInteractionMove(touch.clientX, touch.clientY);
-  });
+    if (draggedObj) {
+      const touch = e.touches[0];
+      handleInteractionMove(touch.clientX, touch.clientY);
+      e.preventDefault(); // Stop scrolling only if dragging
+    }
+  }, { passive: false });
   window.addEventListener('touchend', handleInteractionEnd);
 
   function drawObject(obj) {
