@@ -42,20 +42,19 @@ document.addEventListener('mousemove', (e) => {
 
 // ─── Preview Teaser Config ───
 // These are VISIBLE before unlock — they're just teasers, not the real vault content.
-// Replace with your own preview image/video when ready.
 const PREVIEW_CONFIG = {
   // The single visible teaser image
   visibleImage: {
-    url: '',       // e.g., '/media/teaser-preview.jpg'
-    title: 'PREVIEW_001',
-    tag: 'TEASER',
+    url: '',       
+    title: 'TEASER_01',
+    tag: 'PREVIEW',
   },
   // The single visible teaser video
   visibleVideo: {
-    url: '',       // e.g., '/media/teaser-clip.mp4'
-    poster: '',    // e.g., '/media/teaser-poster.jpg'
-    title: 'VIDEO_PREVIEW',
-    tag: 'CLIP',
+    url: '',       
+    poster: '',    
+    title: 'CLIP_01',
+    tag: 'TRAILER',
   },
   // Number of blurred/locked placeholder cards to show
   lockedCount: 4,
@@ -111,7 +110,7 @@ async function runBootSequence() {
     'Establishing secure connection...',
     'Bypassing firewall...',
     'Accessing vault: TIME CAPSULE',
-    'Status: SEALED.',
+    'Status: SEEKING ASSETS...',
   ];
 
   let currentText = '';
@@ -123,14 +122,11 @@ async function runBootSequence() {
     for (let j = 0; j < line.length; j++) {
       currentText += line[j];
       bootText.textContent = currentText;
-      // Random typing speed between 10ms and 50ms per character
       await sleep(Math.random() * 40 + 10);
     }
 
     currentText += '\n';
     bootText.textContent = currentText;
-
-    // Pause briefly at the end of each line
     await sleep(400);
   }
 
@@ -395,8 +391,15 @@ function renderMedia(media) {
       }
       vaultGrid.appendChild(card);
     });
+  } else {
+    vaultGrid.innerHTML = `
+      <div class="vault__loader" style="grid-column: 1 / -1;">
+        <p style="color: var(--text-dim); padding-top: 4rem;">NO ARTIFACTS RECOVERED FROM STORAGE.</p>
+      </div>
+    `;
   }
 }
+
 // ═══════════════════════════════════════════════════
 // UTILITIES
 // ═══════════════════════════════════════════════════
@@ -414,11 +417,10 @@ function renderPreview() {
   const { visibleImage, visibleVideo, lockedCount } = PREVIEW_CONFIG;
 
   // 1. Visible teaser image card
-  const imgCard = document.createElement('div');
-  imgCard.className = 'preview__card fade-up';
-  imgCard.style.animationDelay = '0s';
-
   if (visibleImage.url) {
+    const imgCard = document.createElement('div');
+    imgCard.className = 'preview__card fade-up';
+    imgCard.style.animationDelay = '0s';
     imgCard.innerHTML = `
       <img src="${visibleImage.url}" alt="${visibleImage.title}" loading="lazy" />
       <div class="preview__card-info">
@@ -426,26 +428,14 @@ function renderPreview() {
         <span class="preview__card-tag">${visibleImage.tag}</span>
       </div>
     `;
-  } else {
-    // Placeholder when no image is set yet
-    imgCard.innerHTML = `
-      <div style="height:200px; background: linear-gradient(135deg, #111 0%, #1a1a2e 50%, #0a0a0a 100%); display:flex; align-items:center; justify-content:center;">
-        <span style="font-family: var(--font-mono); font-size:0.7rem; color: var(--cyan); letter-spacing:0.15em;">TEASER IMAGE</span>
-      </div>
-      <div class="preview__card-info">
-        <span class="preview__card-title">${visibleImage.title}</span>
-        <span class="preview__card-tag">${visibleImage.tag}</span>
-      </div>
-    `;
+    previewGrid.appendChild(imgCard);
   }
-  previewGrid.appendChild(imgCard);
 
   // 2. Visible teaser video card
-  const vidCard = document.createElement('div');
-  vidCard.className = 'preview__card preview__card--video fade-up';
-  vidCard.style.animationDelay = '0.12s';
-
   if (visibleVideo.url) {
+    const vidCard = document.createElement('div');
+    vidCard.className = 'preview__card preview__card--video fade-up';
+    vidCard.style.animationDelay = '0.12s';
     vidCard.innerHTML = `
       <div class="preview__card-media">
         <video src="${visibleVideo.url}" muted loop autoplay playsinline poster="${visibleVideo.poster}"></video>
@@ -458,40 +448,29 @@ function renderPreview() {
         <span class="preview__card-tag">${visibleVideo.tag}</span>
       </div>
     `;
-  } else {
-    vidCard.innerHTML = `
-      <div class="preview__card-media" style="height:200px; background: linear-gradient(135deg, #0a0a0a 0%, #111827 50%, #0a0a0a 100%); display:flex; align-items:center; justify-content:center; position:relative;">
-        <div class="play-badge">
-          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
-        </div>
-      </div>
-      <div class="preview__card-info">
-        <span class="preview__card-title">${visibleVideo.title}</span>
-        <span class="preview__card-tag">${visibleVideo.tag}</span>
-      </div>
-    `;
+    previewGrid.appendChild(vidCard);
   }
-  previewGrid.appendChild(vidCard);
 
   // 3. Locked / blurred placeholder cards
   const lockedLabels = ['CLASSIFIED', 'ENCRYPTED', 'REDACTED', 'SEALED', 'HIDDEN', 'UNKNOWN'];
-  for (let i = 0; i < lockedCount; i++) {
+  const placeholdersToRender = Math.max(0, Math.min(lockedCount || 4, 12));
+
+  for (let i = 0; i < placeholdersToRender; i++) {
     const lockedCard = document.createElement('div');
     lockedCard.className = 'preview__card preview__card--locked fade-up';
     lockedCard.style.animationDelay = `${(i + 2) * 0.12}s`;
 
-    // Use a generated gradient as blurred background (no real image needed)
     const hue = 180 + i * 30;
     lockedCard.innerHTML = `
       <div class="preview__card-media">
-        <div style="width:100%;height:100%;background:linear-gradient(${135 + i * 20}deg, hsl(${hue},40%,8%) 0%, hsl(${hue + 40},30%,12%) 50%, hsl(${hue},20%,6%) 100%); filter: blur(0px);"></div>
+        <div style="width:100%;height:100%;background:linear-gradient(${135 + i * 20}deg, hsl(${hue},40%,8%) 0%, hsl(${hue + 40},30%,12%) 50%, hsl(${hue},20%,6%) 100%);"></div>
         <div class="lock-overlay">
           ${LOCK_SVG}
           <span class="lock-overlay__text">${lockedLabels[i % lockedLabels.length]}</span>
         </div>
       </div>
       <div class="preview__card-info">
-        <span class="preview__card-title">FRAGMENT_${String(i + 2).padStart(3, '0')}</span>
+        <span class="preview__card-title">FRAGMENT_${String(i + 3).padStart(3, '0')}</span>
         <span class="preview__card-tag" style="color: var(--red); border-color: rgba(255,0,60,0.3);">LOCKED</span>
       </div>
     `;
@@ -505,7 +484,6 @@ function renderPreview() {
 function init() {
   initParticles();
 
-  // Check if already past unlock date
   const now = new Date();
   if (now >= TARGET_DATE) {
     isUnlocked = true;
@@ -519,7 +497,6 @@ function init() {
       });
     }
 
-    // Show loader & fetch
     vaultGrid.innerHTML = `
       <div class="vault__loader" style="grid-column: 1 / -1;">
         <div class="spinner"></div>
@@ -547,11 +524,9 @@ function init() {
         `;
       });
   } else {
-    // Start countdown
     updateCountdown();
     timerInterval = setInterval(updateCountdown, 1000);
 
-    // Fetch dynamic teasers from API
     fetch(API_ENDPOINT)
       .then(r => r.json())
       .then(data => {
@@ -565,29 +540,26 @@ function init() {
           if (data.teasers.totalLockedCount !== undefined) {
              PREVIEW_CONFIG.lockedCount = data.teasers.totalLockedCount;
           }
-          // Re-render preview with real data
           renderPreview();
         }
       })
-      .catch(err => console.error('Failed to fetch teasers:', err));
+      .catch(err => {
+        console.error('Failed to fetch teasers:', err);
+        renderPreview();
+      });
 
-    // Initial render with placeholders (will be replaced by real data above)
     renderPreview();
   }
 }
 
 document.addEventListener('DOMContentLoaded', runBootSequence);
 
-// ═══════════════════════════════════════════════════
-// HIDDEN FEATURE: MANIPULATE TARGET DATE
-// Press Ctrl+Shift+D (or Cmd+Shift+D) to change the unlock time locally
-// ═══════════════════════════════════════════════════
+// ─── Hidden Feature: Manipulate Target Date ───
 document.addEventListener('keydown', (e) => {
-  // Check for Ctrl/Cmd + Shift + D
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
     e.preventDefault();
     const newDateStr = prompt(
-      '// HIDDEN OVERRIDE //\nEnter new target date (YYYY-MM-DDTHH:MM:SS):\nExample for unlocking right now: ' +
+      '// HIDDEN OVERRIDE //\nEnter new target date (YYYY-MM-DDTHH:MM:SS):\nExample: ' +
       new Date(Date.now() - 1000).toISOString().slice(0, 19)
     );
 
@@ -595,12 +567,9 @@ document.addEventListener('keydown', (e) => {
       const parsedDate = new Date(newDateStr);
       if (!isNaN(parsedDate.getTime())) {
         TARGET_DATE = parsedDate;
-        console.log('Target date manually overridden to:', TARGET_DATE);
-
-        // Force an immediate UI update
         updateCountdown();
       } else {
-        alert('Invalid date format. Please use YYYY-MM-DDTHH:MM:SS');
+        alert('Invalid date format.');
       }
     }
   }
