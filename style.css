@@ -5,21 +5,25 @@
 /* ─── Design Tokens ─── */
 :root {
   /* LIGHT THEME (Default) */
-  --bg:        #FFFFFF; /* White */
-  --surface:   #D4D4D4; /* Light Gray */
-  --surface-2: #B3B3B3; /* Mid Gray */
-  --border:    #D4D4D4; 
-  --text:      #2B2B2B; /* Dark Gray */
-  --text-dim:  #666666; 
-  --cyan:      #2B2B2B; 
-  --cyan-dim:  rgba(43, 43, 43, 0.2);
+  --bg: #FFFFFF;
+  /* White */
+  --surface: #D4D4D4;
+  /* Light Gray */
+  --surface-2: #B3B3B3;
+  /* Mid Gray */
+  --border: #D4D4D4;
+  --text: #2B2B2B;
+  /* Dark Gray */
+  --text-dim: #666666;
+  --cyan: #2B2B2B;
+  --cyan-dim: rgba(43, 43, 43, 0.2);
   --cyan-glow: 0 0 10px rgba(43, 43, 43, 0.1);
-  --white:     #2B2B2B; 
-  --red:       #DC2626; 
-  --green:     #059669;
+  --white: #2B2B2B;
+  --red: #DC2626;
+  --green: #059669;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --ease:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─── Custom Scrollbar ─── */
@@ -50,37 +54,39 @@
 
 [data-theme='dark'] {
   /* DARK THEME (Forest Green Palette) */
-  --bg:        #3D4127; 
-  --surface:   #4A4F32; 
-  --surface-2: #636B2F; 
-  --border:    #636B2F; 
-  --text:      #BAC095; 
-  --text-dim:  #636B2F; 
-  --cyan:      #DADE95; 
-  --cyan-dim:  rgba(218, 222, 149, 0.4);
+  --bg: #3D4127;
+  --surface: #4A4F32;
+  --surface-2: #636B2F;
+  --border: #636B2F;
+  --text: #BAC095;
+  --text-dim: #BAC095;
+  --cyan: #DADE95;
+  --cyan-dim: rgba(218, 222, 149, 0.4);
   --cyan-glow: 0 0 20px rgba(218, 222, 149, 0.3), 0 0 60px rgba(218, 222, 149, 0.1);
-  --white:     #DADE95; 
-  --red:       #FF5722; 
-  --green:     #BAC095;
+  --white: #DADE95;
+  --red: #FF5722;
+  --green: #BAC095;
 }
 
 [data-theme='light'] {
-  --bg:        #FFFFFF;
-  --surface:   #D4D4D4;
+  --bg: #FFFFFF;
+  --surface: #D4D4D4;
   --surface-2: #B3B3B3;
-  --border:    #D4D4D4;
-  --text:      #2B2B2B;
-  --text-dim:  #666666;
-  --cyan:      #2B2B2B;
-  --cyan-dim:  rgba(43, 43, 43, 0.2);
+  --border: #D4D4D4;
+  --text: #2B2B2B;
+  --text-dim: #666666;
+  --cyan: #2B2B2B;
+  --cyan-dim: rgba(43, 43, 43, 0.2);
   --cyan-glow: 0 0 10px rgba(43, 43, 43, 0.1);
-  --white:     #2B2B2B;
-  --red:       #DC2626;
-  --green:     #059669;
+  --white: #2B2B2B;
+  --red: #DC2626;
+  --green: #059669;
 }
 
 /* ─── Reset ─── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -109,13 +115,11 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 999;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
 }
 
 /* ─── Mouse Glow ─── */
@@ -123,14 +127,14 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 2; /* Below text, above background */
-  background: radial-gradient(
-    800px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
-    rgba(218, 222, 149, 0.12),
-    transparent 40%
-  );
+  z-index: 2;
+  /* Below text, above background */
+  background: radial-gradient(800px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+      rgba(218, 222, 149, 0.12),
+      transparent 40%);
   transition: opacity 0.5s var(--ease);
-  opacity: 0; /* Hidden until mouse moves */
+  opacity: 0;
+  /* Hidden until mouse moves */
 }
 
 /* ─── Particle Canvas ─── */
@@ -236,7 +240,7 @@ body {
 
 [data-theme='light'] .status-bar {
   background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme='light'] .timer__block {
@@ -244,11 +248,9 @@ body {
 }
 
 [data-theme='light'] .mouse-glow {
-  background: radial-gradient(
-    800px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
-    rgba(179, 179, 179, 0.08),
-    transparent 40%
-  );
+  background: radial-gradient(800px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+      rgba(179, 179, 179, 0.08),
+      transparent 40%);
 }
 
 .audio-icon {
@@ -356,8 +358,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;       /* Prevents breaking layout on small screens */
-  gap: 1rem;             /* Space around the image */
+  flex-wrap: wrap;
+  /* Prevents breaking layout on small screens */
+  gap: 1rem;
+  /* Space around the image */
   font-family: var(--font-mono);
   font-size: clamp(2.5rem, 7vw, 5.5rem);
   font-weight: 700;
@@ -384,7 +388,8 @@ body {
 .hero__title-circle img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* This makes SURE landscape/portrait images never squish! */
+  object-fit: cover;
+  /* This makes SURE landscape/portrait images never squish! */
 }
 
 .hero__subtitle,
@@ -431,31 +436,85 @@ body {
 }
 
 @keyframes glitch-before {
-  0%   { transform: translate(0); }
-  20%  { transform: translate(-3px, 2px); }
-  40%  { transform: translate(3px, -1px); }
-  60%  { transform: translate(-1px, 1px); }
-  80%  { transform: translate(2px, -2px); }
-  100% { transform: translate(0); }
+  0% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(-3px, 2px);
+  }
+
+  40% {
+    transform: translate(3px, -1px);
+  }
+
+  60% {
+    transform: translate(-1px, 1px);
+  }
+
+  80% {
+    transform: translate(2px, -2px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
 }
 
 @keyframes glitch-after {
-  0%   { transform: translate(0); }
-  20%  { transform: translate(2px, -2px); }
-  40%  { transform: translate(-2px, 2px); }
-  60%  { transform: translate(1px, -1px); }
-  80%  { transform: translate(-3px, 1px); }
-  100% { transform: translate(0); }
+  0% {
+    transform: translate(0);
+  }
+
+  20% {
+    transform: translate(2px, -2px);
+  }
+
+  40% {
+    transform: translate(-2px, 2px);
+  }
+
+  60% {
+    transform: translate(1px, -1px);
+  }
+
+  80% {
+    transform: translate(-3px, 1px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
 }
 
 @keyframes glitch-skew {
-  0%   { transform: skew(0deg); }
-  2%   { transform: skew(0.4deg); }
-  4%   { transform: skew(0deg); }
-  40%  { transform: skew(0deg); }
-  42%  { transform: skew(-0.3deg); }
-  44%  { transform: skew(0deg); }
-  100% { transform: skew(0deg); }
+  0% {
+    transform: skew(0deg);
+  }
+
+  2% {
+    transform: skew(0.4deg);
+  }
+
+  4% {
+    transform: skew(0deg);
+  }
+
+  40% {
+    transform: skew(0deg);
+  }
+
+  42% {
+    transform: skew(-0.3deg);
+  }
+
+  44% {
+    transform: skew(0deg);
+  }
+
+  100% {
+    transform: skew(0deg);
+  }
 }
 
 /* ─── Timer ─── */
@@ -529,8 +588,15 @@ body {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.2; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.2;
+  }
 }
 
 /* ─── Progress Bar ─── */
@@ -664,9 +730,17 @@ body {
   letter-spacing: 0.1em;
 }
 
-.sharp-word--red { color: var(--red); }
-.sharp-word--cyan { color: var(--cyan); }
-.sharp-word--white { color: var(--white); }
+.sharp-word--red {
+  color: var(--red);
+}
+
+.sharp-word--cyan {
+  color: var(--cyan);
+}
+
+.sharp-word--white {
+  color: var(--white);
+}
 
 .message-teaser__lock-overlay {
   position: absolute;
@@ -784,13 +858,11 @@ body {
   position: absolute;
   inset: 0;
   background:
-    repeating-linear-gradient(
-      0deg,
+    repeating-linear-gradient(0deg,
       transparent,
       transparent 2px,
       rgba(0, 0, 0, 0.08) 2px,
-      rgba(0, 0, 0, 0.08) 4px
-    );
+      rgba(0, 0, 0, 0.08) 4px);
   z-index: 1;
 }
 
@@ -824,8 +896,17 @@ body {
 }
 
 @keyframes lock-pulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50%      { opacity: 0.9; transform: scale(1.08); }
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
 }
 
 /* ─── Video Teaser Card ─── */
@@ -1000,8 +1081,15 @@ body {
 
 /* ─── Pulse Dot ─── */
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.4; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* ─── Fade-in utility for vault cards ─── */
@@ -1037,7 +1125,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .vault__loader p {
@@ -1161,8 +1251,15 @@ body {
 }
 
 @keyframes modal-pop {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .modal__body {
