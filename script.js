@@ -30,6 +30,9 @@ const iconOff = $('.audio-icon--off');
 const ambientSound = $('#ambient-sound');
 const unlockSound = $('#unlock-sound');
 const mouseGlow = $('#mouse-glow');
+const themeToggle = $('#theme-toggle');
+const sunIcon = $('.theme-icon--sun');
+const moonIcon = $('.theme-icon--moon');
 
 // Modal Refs
 const mediaModal = $('#media-modal');
@@ -81,6 +84,31 @@ if (audioToggle && iconOn && iconOff) {
       if (ambientSound) ambientSound.play().catch(err => console.log('Audio error:', err));
     }
   });
+}
+
+// ─── Theme Toggle Logic ───
+if (themeToggle && sunIcon && moonIcon) {
+  const currentTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  updateThemeIcons(currentTheme);
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcons(newTheme);
+  });
+}
+
+function updateThemeIcons(theme) {
+  if (theme === 'light') {
+    sunIcon.style.display = 'block';
+    moonIcon.style.display = 'none';
+  } else {
+    sunIcon.style.display = 'none';
+    moonIcon.style.display = 'block';
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -172,40 +200,193 @@ function initParticles() {
   const canvas = document.getElementById('particleCanvas');
   const ctx = canvas.getContext('2d');
   let particles = [];
-  const PARTICLE_COUNT = 60;
+  let shootingStars = [];
+  let spaceObjects = [];
+  
+  const PARTICLE_COUNT = 180;
+  
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    initSpaceObjects(); // Re-init objects on resize
   }
-  resize();
+  
   window.addEventListener('resize', resize);
+  resize();
+
   class Particle {
     constructor() { this.reset(); }
     reset() {
       this.x = Math.random() * canvas.width;
       this.y = Math.random() * canvas.height;
-      this.size = Math.random() * 1.5 + 0.5;
-      this.speedX = (Math.random() - 0.5) * 0.3;
-      this.speedY = (Math.random() - 0.5) * 0.3;
-      this.opacity = Math.random() * 0.5 + 0.1;
+      // Varying sizes: Small (0.5-1.2), Medium (1.2-2.5), Big (2.5-4)
+      const r = Math.random();
+      if (r < 0.6) this.size = Math.random() * 0.7 + 0.5; // Small
+      else if (r < 0.9) this.size = Math.random() * 1.3 + 1.2; // Medium
+      else this.size = Math.random() * 1.5 + 2.5; // Big
+      
+      // Some move fast, some slow
+      const speedMult = Math.random() < 0.1 ? 1.5 : 0.4; 
+      this.speedX = (Math.random() - 0.5) * speedMult;
+      this.speedY = (Math.random() - 0.5) * speedMult;
+      this.opacity = Math.random() * 0.4 + 0.1;
     }
     update() {
       this.x += this.speedX;
       this.y += this.speedY;
-      if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-      if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+      if (this.x < 0) this.x = canvas.width;
+      if (this.x > canvas.width) this.x = 0;
+      if (this.y < 0) this.y = canvas.height;
+      if (this.y > canvas.height) this.y = 0;
     }
     draw() {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(0, 240, 255, ${this.opacity})`;
+      ctx.fillStyle = isLight ? `rgba(20, 20, 20, ${this.opacity * 0.8})` : `rgba(218, 222, 149, ${this.opacity})`;
       ctx.fill();
     }
   }
+
+  class ShootingStar {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * (canvas.height * 0.5);
+      this.length = Math.random() * 80 + 40;
+      this.speed = Math.random() * 10 + 5;
+      this.opacity = 0;
+      this.active = false;
+      this.wait = Math.random() * 400; // Delay between streaks
+    }
+    update() {
+      if (!this.active) {
+        if (this.wait-- <= 0) this.active = true;
+        return;
+      }
+      this.x -= this.speed;
+      this.y += this.speed * 0.5;
+      this.opacity += 0.05;
+      if (this.x < -this.length || this.y > canvas.height) this.reset();
+    }
+    draw() {
+      if (!this.active) return;
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      ctx.strokeStyle = isLight ? `rgba(20, 20, 20, ${this.opacity})` : `rgba(218, 222, 149, ${this.opacity})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(this.x + this.length, this.y - this.length * 0.5);
+      ctx.stroke();
+    }
+  }
+
+  // --- Space Elements: Planets, UFO, etc ---
+  function initSpaceObjects() {
+    spaceObjects = [
+      { type: 'saturn', x: canvas.width * 0.85, y: canvas.height * 0.2, s: 35, angle: 0, rot: 0.005 },
+      { type: 'jupiter', x: canvas.width * 0.1, y: canvas.height * 0.3, s: 45, rot: 0.003, t: 0 },
+      { type: 'mars', x: canvas.width * 0.7, y: canvas.height * 0.75, s: 18, rot: 0.008, t: 0 },
+      { type: 'earth', x: canvas.width * 0.25, y: canvas.height * 0.15, s: 22, rot: 0.004, t: 0 },
+      { type: 'moon', x: canvas.width * 0.2, y: canvas.height * 0.8, s: 12, rot: 0.002, t: 0 },
+      { type: 'ufo', x: canvas.width * 0.45, y: canvas.height * 0.55, t: 0 },
+      { type: 'satellite', x: 200, y: 150, vx: 0.2, vy: 0.08 },
+      { type: 'asteroid', x: canvas.width * 0.6, y: canvas.height * 0.85, s: 5 }
+    ];
+  }
+
+  function drawObject(obj) {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const mainCol = isLight ? '#2B2B2B' : '#BAC095';
+    const accentCol = isLight ? '#D4D4D4' : '#636B2F';
+    const highlightCol = isLight ? '#000000' : '#DADE95';
+
+    ctx.save();
+    ctx.translate(obj.x, obj.y);
+
+    if (obj.type === 'saturn') {
+      obj.angle += obj.rot;
+      // Shadow / Base
+      ctx.beginPath(); ctx.arc(0, 0, obj.s, 0, Math.PI * 2);
+      ctx.fillStyle = mainCol; ctx.fill();
+      // Ring (Under planet)
+      ctx.beginPath(); ctx.ellipse(0, 0, obj.s * 2.3, obj.s * 0.7, Math.PI / 8, 0, Math.PI);
+      ctx.strokeStyle = accentCol; ctx.stroke();
+      // Ring (Over planet)
+      ctx.beginPath(); ctx.ellipse(0, 0, obj.s * 2.3, obj.s * 0.7, Math.PI / 8, Math.PI, Math.PI * 2);
+      ctx.strokeStyle = accentCol; ctx.stroke();
+    } 
+    else if (obj.type === 'jupiter') {
+      obj.t += obj.rot;
+      // Clip to sphere
+      ctx.beginPath(); ctx.arc(0, 0, obj.s, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = mainCol; ctx.fill();
+      // Banded Stripes (Rotating)
+      ctx.fillStyle = accentCol;
+      for (let i = -2; i < 3; i++) {
+        let y = i * (obj.s / 2) + (Math.sin(obj.t + i) * 2);
+        ctx.fillRect(-obj.s * 2, y, obj.s * 4, 3);
+      }
+      // Great Spot
+      let spotX = (obj.t * 50) % (obj.s * 4) - obj.s * 2;
+      ctx.beginPath(); ctx.ellipse(spotX, 10, 8, 4, 0, 0, Math.PI * 2);
+      ctx.fillStyle = isLight ? '#FF5722' : '#FF5722'; ctx.fill();
+    }
+    else if (obj.type === 'mars' || obj.type === 'moon') {
+      obj.t += obj.rot;
+      ctx.beginPath(); ctx.arc(0, 0, obj.s, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = obj.type === 'mars' ? (isLight ? '#A34428' : '#FF5722') : accentCol;
+      ctx.fill();
+      // Craters (Rotating)
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      for (let i = 0; i < 5; i++) {
+          let cx = ((obj.t * 30 + i * 20) % (obj.s * 3)) - obj.s * 1.5;
+          let cy = Math.sin(i) * (obj.s * 0.6);
+          ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    else if (obj.type === 'earth') {
+      obj.t += obj.rot;
+      ctx.beginPath(); ctx.arc(0, 0, obj.s, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = isLight ? '#D4D4D4' : '#4A4F32'; ctx.fill();
+      // Continents (Rotating)
+      ctx.fillStyle = mainCol;
+      for (let i = 0; i < 3; i++) {
+        let ex = ((obj.t * 40 + i * 50) % (obj.s * 4)) - obj.s * 2;
+        ctx.fillRect(ex, -10 + i * 5, 15, 8);
+      }
+    }
+    else if (obj.type === 'ufo') {
+      obj.t += 0.05;
+      ctx.translate(Math.sin(obj.t) * 15, Math.cos(obj.t * 0.4) * 8);
+      ctx.beginPath(); ctx.ellipse(0, 0, 16, 6, 0, 0, Math.PI * 2);
+      ctx.fillStyle = mainCol; ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -3, 6, 0, Math.PI, true);
+      ctx.fillStyle = isLight ? '#BAC095' : '#DADE95'; ctx.fill();
+    }
+    else if (obj.type === 'satellite') {
+      obj.x += obj.vx; obj.y += obj.vy;
+      if (obj.x > canvas.width) obj.x = -50;
+      ctx.fillStyle = mainCol; ctx.fillRect(0, 0, 10, 5);
+      ctx.fillRect(3, -4, 4, 13);
+    }
+    else if (obj.type === 'asteroid') {
+      ctx.rotate(Date.now() * 0.001);
+      ctx.fillStyle = accentCol;
+      ctx.fillRect(-obj.s, -obj.s, obj.s * 2, obj.s * 2);
+    }
+
+    ctx.restore();
+  }
+
   for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+  for (let i = 0; i < 3; i++) shootingStars.push(new ShootingStar());
+
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => { p.update(); p.draw(); });
+    shootingStars.forEach(s => { s.update(); s.draw(); });
+    spaceObjects.forEach(o => drawObject(o));
     requestAnimationFrame(animate);
   }
   animate();
@@ -319,8 +500,8 @@ function renderPreview() {
   for (let i = 0; i < placeholders; i++) {
     const lockedCard = document.createElement('div');
     lockedCard.className = 'preview__card preview__card--locked fade-up';
-    const hue = 180 + i * 30;
-    lockedCard.innerHTML = `<div class="preview__card-media"><div style="width:100%;height:100%;background:linear-gradient(${135 + i * 20}deg, hsl(${hue},40%,8%) 0%, hsl(${hue + 40},30%,12%) 50%, hsl(${hue},20%,6%) 100%); min-height:200px;"></div><div class="lock-overlay">${LOCK_SVG}<span class="lock-overlay__text">LOCKED</span></div></div><div class="preview__card-info"><span class="preview__card-title">FRAGMENT_${String(i + 3).padStart(3, '0')}</span><span class="preview__card-tag" style="color:var(--red);">SEALED</span></div>`;
+    const hue = 65 + i * 12;
+    lockedCard.innerHTML = `<div class="preview__card-media"><div style="width:100%;height:100%;background:linear-gradient(${135 + i * 20}deg, hsl(${hue},30%,12%) 0%, hsl(${hue + 20},20%,16%) 50%, hsl(${hue},15%,10%) 100%); min-height:200px;"></div><div class="lock-overlay">${LOCK_SVG}<span class="lock-overlay__text">LOCKED</span></div></div><div class="preview__card-info"><span class="preview__card-title">FRAGMENT_${String(i + 3).padStart(3, '0')}</span><span class="preview__card-tag" style="color:var(--red);">SEALED</span></div>`;
     previewGrid.appendChild(lockedCard);
   }
 }
